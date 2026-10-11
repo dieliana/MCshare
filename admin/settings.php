@@ -91,7 +91,13 @@ $pageTitle = '站点设置';
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= e($pageTitle) ?> · 管理后台</title>
-<link rel="stylesheet" href="assets/admin.css">
+    <link rel="stylesheet" href="assets/admin.css">
+    <style>
+    .settings-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;border-bottom:1px solid var(--line);padding-bottom:10px}
+    .settings-tabs .tab{background:var(--bg2);border:1px solid var(--line);color:var(--text);padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px}
+    .settings-tabs .tab:hover{border-color:var(--accent);color:var(--accent)}
+    .settings-tabs .tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+    </style>
     <link rel="stylesheet" href="../assets/fontawesome/css/all.min.css">
 </head>
 <body>
@@ -104,20 +110,30 @@ $pageTitle = '站点设置';
   <form method="post" action="settings.php" class="form" style="max-width:680px" enctype="multipart/form-data">
     <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
 
-    <div class="field"><label>站点名称 <span class="req">*</span></label>
+    <div class="settings-tabs">
+      <button type="button" class="tab active" data-sec="basic">基本设置</button>
+      <button type="button" class="tab" data-sec="appearance">外观设置</button>
+      <button type="button" class="tab" data-sec="mail">邮件 SMTP</button>
+      <button type="button" class="tab" data-sec="update">更新与 API</button>
+    </div>
+    <div class="sec" data-sec="basic"></div>
+    <div class="sec" data-sec="appearance"></div>
+    <div class="sec" data-sec="mail"></div>
+    <div class="sec" data-sec="update"></div>
+    <div class="field" data-sec="basic"><label>站点名称 <span class="req">*</span></label>
       <input type="text" name="site_name" value="<?= e($vals['site_name'] ?: (defined('SITE_NAME') ? SITE_NAME : '')) ?>"></div>
 
-    <div class="field"><label>站点描述</label>
+    <div class="field" data-sec="basic"><label>站点描述</label>
       <input type="text" name="site_desc" value="<?= e($vals['site_desc']) ?>" placeholder="用于前台标题下的简介"></div>
 
-    <div class="field"><label>站点公告（显示在前台顶部）</label>
+    <div class="field" data-sec="basic"><label>站点公告（显示在前台顶部）</label>
       <input type="text" name="announcement" value="<?= e($vals['announcement']) ?>" placeholder="留空则不显示"></div>
 
-    <div class="field"><label>页脚文字</label>
+    <div class="field" data-sec="basic"><label>页脚文字</label>
       <textarea name="footer_text" rows="3" style="width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:10px 12px;font-size:14px" placeholder="站点版权信息"><?= e($vals['footer_text']) ?></textarea>
       <p class="mini-meta" style="font-size:12px;margin-top:6px">支持 HTML：可填写版权、备案号、友情链接等</p></div>
 
-    <div class="field">
+    <div class="field" data-sec="appearance">
       <label>前台主题</label>
       <select name="theme">
         <?php foreach ($themes as $k => $label): ?>
@@ -127,7 +143,7 @@ $pageTitle = '站点设置';
       <p class="hint">前台访客也可在顶部点「<i class="fa-solid fa-palette"></i>」按钮自行切换主题（本机记忆）。</p>
     </div>
 
-    <div class="field">
+    <div class="field" data-sec="appearance">
       <label>站点 Logo（显示在顶栏）</label>
       <?php if ($vals['logo']): ?>
         <div class="cover-preview"><img src="<?= e(cover_url($vals['logo'])) ?>" alt="当前 Logo" style="max-height:56px"></div>
@@ -139,7 +155,7 @@ $pageTitle = '站点设置';
       <p class="hint">支持 jpg/png/webp/gif/svg/ico，≤ 8MB（SVG/ICO 常见用于透明 Logo）</p>
     </div>
 
-    <div class="field">
+    <div class="field" data-sec="appearance">
       <label>浏览器标签图标（Favicon）</label>
       <?php if ($vals['favicon']): ?>
         <div class="cover-preview"><img src="<?= e(cover_url($vals['favicon'])) ?>" alt="当前图标" style="max-height:40px"></div>
@@ -151,26 +167,26 @@ $pageTitle = '站点设置';
       <p class="hint">建议使用 png/ico/svg 图标（如 32×32 或 64×64）</p>
     </div>
 
-    <div class="field">
+    <div class="field" data-sec="appearance">
       <label>主页背景图片（可选）</label>
       <input type="text" name="background_img" value="<?= e($vals['background_img'] ?? '') ?>" placeholder="填写图片地址，如 uploads/xxx.jpg 或图库复制的完整链接（留空则不设置）">
       <p class="hint">设置后前台主页以该图为背景（覆盖全屏、固定不随滚动），并保留主题底色叠加。也可先在「图库」上传图片后复制其路径填入。</p>
     </div>
 
-    <div class="field">
+    <div class="field" data-sec="basic">
       <label>主页自动刷新间隔（秒）</label>
       <input type="number" name="auto_refresh" value="<?= (int)($vals['auto_refresh'] ?: '0') ?>" min="0" placeholder="如 120">
       <p class="hint">前台首页会每隔该秒数自动刷新以展示最新内容；填 0 表示关闭自动刷新。</p>
     </div>
 
-    <div class="field" style="border-top:1px solid var(--line);padding-top:16px;margin-top:16px">
+    <div class="field" data-sec="basic" style="border-top:1px solid var(--line);padding-top:16px;margin-top:16px">
       <label>评论是否需要审核</label>
       <label class="inline-check"><input type="checkbox" name="comment_moderation" value="1" <?= (int)$vals['comment_moderation'] === 1 ? 'checked' : '' ?>> 开启评论审核（新评论需后台审核通过后才展示）</label>
       <p class="hint">关闭时新评论直接展示；开启后新评论进入「评论管理 → 待审核」，通过后才在前台显示。</p>
     </div>
 
     
-    <div class="field" style="border-top:1px solid var(--line);padding-top:20px;margin-top:20px">
+    <div class="field" data-sec="mail" style="border-top:1px solid var(--line);padding-top:20px;margin-top:20px">
       <div class="section-title" style="margin:0 0 6px">SMTP 邮箱（用于注册验证码 / 批量发邮件）</div>
       <p class="hint" style="margin-bottom:8px">在服务商开启 SMTP 服务并取得授权码后填写，未配置则注册的邮箱验证码与后台批量邮件不可用。</p>
       <div class="two-col" style="margin-top:6px">
@@ -195,7 +211,7 @@ $pageTitle = '站点设置';
       </div>
       <p class="hint">QQ 邮箱示例：登录邮箱 → 设置 → 账户 → 开启「SMTP 服务」→ 生成授权码；服务器 smtp.qq.com，端口 465(SSL) 或 587(STARTTLS)；账号填完整邮箱（如 xxx@qq.com），密码/授权码填 16 位授权码（不是 QQ 登录密码）；发件人地址需与账号一致。</p><p class="hint">保存后可到「邮件发送」页发一封测试邮件验证配置。</p>
     </div>
-    <div class="field" style="border-top:1px solid var(--line);padding-top:20px;margin-top:20px">
+    <div class="field" data-sec="update" style="border-top:1px solid var(--line);padding-top:20px;margin-top:20px">
       <div class="section-title" style="margin:0 0 6px">GitHub API Token（可选，用于「系统更新」）</div>
       <p class="hint" style="margin-bottom:8px">调用 GitHub API 时使用。不填则匿名调用，限流约每小时 60 次；填写 Personal Access Token 后额度提升到每小时 5000 次。</p>
       <div class="field">
@@ -204,13 +220,13 @@ $pageTitle = '站点设置';
       </div>
       <p class="hint">获取：GitHub → Settings → Developer settings → Personal access tokens → Generate new token（勾选 repo 权限即可）。Token 仅保存在本站数据库，仅用于 GitHub API 认证。</p>
     </div>
-    <div class="field" style="border-top:1px solid var(--line);padding-top:20px;margin-top:20px">
+    <div class="field" data-sec="basic" style="border-top:1px solid var(--line);padding-top:20px;margin-top:20px">
       <div class="section-title" style="margin:0 0 6px">维护模式</div>
       <p class="hint" style="margin-bottom:8px">开启后前台访客访问将显示维护提示，管理员不受影响；适合升级、维护期间使用。</p>
       <label class="inline-check"><input type="checkbox" name="maintenance" value="1" <?= !empty($vals['maintenance']) ? 'checked' : '' ?>> 开启维护模式</label>
       <div class="field" style="margin-top:10px"><label>维护提示语</label><textarea name="maintenance_msg" rows="3" style="width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:9px 12px;font-size:14px"><?= e($vals['maintenance_msg']) ?></textarea></div>
     </div>
-    <div class="field" style="border-top:1px solid var(--line);padding-top:20px;margin-top:20px">
+    <div class="field" data-sec="update" style="border-top:1px solid var(--line);padding-top:20px;margin-top:20px">
       <div class="section-title" style="margin:0 0 6px">API 接口（供外部调用整合包数据）</div>
       <p class="hint" style="margin-bottom:8px">开启后，其他同源码网站或第三方可通过接口拉取已发布的整合包数据（列表 / 详情 / 分类 / 标签）。</p>
       <label class="inline-check"><input type="checkbox" name="api_enabled" value="1" <?= !empty($vals['api_enabled']) ? 'checked' : '' ?>> 开启 API</label>
@@ -220,6 +236,25 @@ $pageTitle = '站点设置';
       <p class="hint">端点（返回 JSON）：<code>/api.php?act=modpacks</code>（列表，可加 <code>category/version/loader/keyword/page/per_page</code>）、<code>act=modpack&amp;id=1</code>（详情）、<code>act=categories</code>（分类）、<code>act=tags</code>（标签）。伪静态形式：<code>/api/modpacks</code> 等。</p>
     </div>
     <div class="form-actions"><button class="btn" type="submit">保存设置</button></div>
+    <script>
+    (function(){
+      var tabs=document.querySelectorAll('.settings-tabs .tab');
+      var secs=document.querySelectorAll('.sec');
+      function show(s){
+        tabs.forEach(function(t){ t.classList.toggle('active', t.dataset.sec===s); });
+        secs.forEach(function(x){ x.style.display = (x.dataset.sec===s)? 'block':'none'; });
+        try{ localStorage.setItem('settings_tab', s); }catch(e){}
+      }
+      document.querySelectorAll('[data-sec]').forEach(function(el){
+        if (el.closest('.settings-tabs')) return;
+        var target=document.querySelector('.sec[data-sec="'+el.dataset.sec+'"]');
+        if(target) target.appendChild(el);
+      });
+      var init='basic'; try{ init=localStorage.getItem('settings_tab')||'basic'; }catch(e){}
+      tabs.forEach(function(t){ t.addEventListener('click', function(){ show(t.dataset.sec); }); });
+      show(init);
+    })();
+    </script>
   </form>
 </main>
 </body>
