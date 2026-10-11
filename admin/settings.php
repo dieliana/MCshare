@@ -14,7 +14,7 @@ $themes = [
 ];
 
 $fields = ['site_name', 'site_desc', 'announcement', 'footer_text', 'theme', 'auto_refresh', 'comment_moderation',
-    'smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_from', 'smtp_fromname', 'smtp_secure'];
+    'smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_from', 'smtp_fromname', 'smtp_secure', 'github_token'];
 
 $msg = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -43,6 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'smtp_from'    => trim($_POST['smtp_from'] ?? ''),
             'smtp_fromname'=> trim($_POST['smtp_fromname'] ?? ''),
             'smtp_secure'  => in_array($_POST['smtp_secure'] ?? '', ['none', 'ssl', 'tls'], true) ? $_POST['smtp_secure'] : 'tls',
+            'github_token' => trim($_POST['github_token'] ?? ''),
         ];
         if ($vals['site_name'] === '') {
             $msg = ['err', '站点名称不能为空'];
@@ -181,6 +182,15 @@ $pageTitle = '站点设置';
         </select>
       </div>
       <p class="hint">QQ 邮箱示例：登录邮箱 → 设置 → 账户 → 开启「SMTP 服务」→ 生成授权码；服务器 smtp.qq.com，端口 465(SSL) 或 587(STARTTLS)；账号填完整邮箱（如 xxx@qq.com），密码/授权码填 16 位授权码（不是 QQ 登录密码）；发件人地址需与账号一致。</p><p class="hint">保存后可到「邮件发送」页发一封测试邮件验证配置。</p>
+    </div>
+    <div class="field" style="border-top:1px solid var(--line);padding-top:20px;margin-top:20px">
+      <div class="section-title" style="margin:0 0 6px">GitHub API Token（可选，用于「系统更新」）</div>
+      <p class="hint" style="margin-bottom:8px">调用 GitHub API 时使用。不填则匿名调用，限流约每小时 60 次；填写 Personal Access Token 后额度提升到每小时 5000 次。</p>
+      <div class="field">
+        <label>GitHub Personal Access Token</label>
+        <input type="password" name="github_token" value="<?= e($vals['github_token'] ?? '') ?>" placeholder="ghp_xxx / ghp_xxx（留空则不认证）" autocomplete="off">
+      </div>
+      <p class="hint">获取：GitHub → Settings → Developer settings → Personal access tokens → Generate new token（勾选 repo 权限即可）。Token 仅保存在本站数据库，仅用于 GitHub API 认证。</p>
     </div>
     <div class="form-actions"><button class="btn" type="submit">保存设置</button></div>
   </form>

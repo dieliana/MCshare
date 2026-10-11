@@ -18,6 +18,7 @@ $verFile = __DIR__ . '/../VERSION';
 $remote = null; // ['sha','short','msg','date','ver']
 $local  = (file_exists($verFile) && ($_v = trim(file_get_contents($verFile)))) ? $_v : '';
 $appVersion = '1.1.1';
+$githubToken = setting('github_token', '');
 function up_local_ver($local)
 {
     if (preg_match('/^v?\d+(\.\d+)+/', $local, $m)) return $m[0];
@@ -25,15 +26,17 @@ function up_local_ver($local)
 }
 $localVer = up_local_ver($local);
 
-function up_api($url)
+function up_api($url, $token = '')
 {
     if (!function_exists('curl_init')) return null;
+    $headers = ['User-Agent: MCshare-Update/1.0'];
+    if ($token !== '') $headers[] = 'Authorization: Bearer ' . $token;
     $ch = curl_init($url);
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT        => 25,
         CURLOPT_SSL_VERIFYPEER => false,
-        CURLOPT_USERAGENT      => 'MCshare-Update/1.0',
+        CURLOPT_HTTPHEADER     => $headers,
     ]);
     $r = curl_exec($ch);
     return json_decode((string)$r, true);
@@ -58,11 +61,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_check($_POST['csrf'] ?? '')) {
         $msg = ['err', '会话已过期，请刷新后重试'];
     } elseif ($action === 'check') {
-        $c = up_api($apiUrl);
+        $c = up_api($apiUrl, $githubToken);
         if (!is_array($c) || empty($c[0]['sha'])) {
             $msg = ['err', '检查更新失败：无法访问 GitHub API（可能被限流，稍后再试）'];
         } else {
-            $tg = up_api('https://api.github.com/repos/' . $repo . '/tags');
+            $tg = up_api('https://api.github.com/repos/' . $repo . '/tags', $githubToken);
             $remoteTag = (is_array($tg) && !empty($tg[0]['name'])) ? ltrim(trim($tg[0]['name']), 'v') : '';
             $remote = [
                 'sha'  => $c[0]['sha'],
