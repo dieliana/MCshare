@@ -14,7 +14,7 @@ $themes = [
 ];
 
 $fields = ['site_name', 'site_desc', 'announcement', 'footer_text', 'theme', 'auto_refresh', 'comment_moderation',
-    'smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_from', 'smtp_fromname', 'smtp_secure', 'github_token', 'maintenance', 'maintenance_msg', 'api_enabled', 'api_key', 'background_img'];
+    'smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_from', 'smtp_fromname', 'smtp_secure', 'github_token', 'maintenance', 'maintenance_msg', 'api_enabled', 'api_key', 'background_img', 'auto_update', 'auto_update_keyword'];
 
 $msg = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -49,6 +49,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'maintenance'    => (int)(((($_POST['maintenance'] ?? 0) == 1) ? 1 : 0)),
             'maintenance_msg'=> trim($_POST['maintenance_msg'] ?? ''),
             'background_img' => trim($_POST['background_img'] ?? ''),
+            'auto_update'    => (int)(((($_POST['auto_update'] ?? 0) == 1) ? 1 : 0)),
+            'auto_update_keyword' => trim($_POST['auto_update_keyword'] ?? 'auto'),
         ];
         if ($vals['site_name'] === '') {
             $msg = ['err', '站点名称不能为空'];
@@ -235,6 +237,14 @@ $pageTitle = '站点设置';
       </div>
       <p class="hint">端点（返回 JSON）：<code>/api.php?act=modpacks</code>（列表，可加 <code>category/version/loader/keyword/page/per_page</code>）、<code>act=modpack&amp;id=1</code>（详情）、<code>act=categories</code>（分类）、<code>act=tags</code>（标签）。伪静态形式：<code>/api/modpacks</code> 等。</p>
     </div>
+    <div class="field" data-sec="update">
+      <div class="section-title" style="margin:0 0 6px">自动更新（定时任务自动检测并同步）</div>
+      <p class="hint" style="margin-bottom:8px">开启后，每日定时任务（cron_daily.php）会自动检测 GitHub 最新 tag：若 tag 名包含下方触发词且版本比当前新，则自动拉取更新并覆盖站点文件（仍保护 config.php / install.lock / uploads）。不满足则仅检测、不自动更新。</p>
+      <label class="inline-check"><input type="checkbox" name="auto_update" value="1" <?= !empty($vals['auto_update']) ? 'checked' : '' ?>> 开启自动更新</label>
+      <div class="field" style="margin-top:10px"><label>触发词（新 tag 名包含即触发自动更新）</label>
+        <input type="text" name="auto_update_keyword" value="<?= e($vals['auto_update_keyword'] ?: 'auto') ?>" placeholder="如 auto / force">
+      </div>
+    </div>
     <div class="form-actions"><button class="btn" type="submit">保存设置</button></div>
     <script>
     (function(){
@@ -245,8 +255,7 @@ $pageTitle = '站点设置';
         secs.forEach(function(x){ x.style.display = (x.dataset.sec===s)? 'block':'none'; });
         try{ localStorage.setItem('settings_tab', s); }catch(e){}
       }
-      document.querySelectorAll('[data-sec]').forEach(function(el){
-        if (el.closest('.settings-tabs')) return;
+      document.querySelectorAll('.field[data-sec]').forEach(function(el){
         var target=document.querySelector('.sec[data-sec="'+el.dataset.sec+'"]');
         if(target) target.appendChild(el);
       });

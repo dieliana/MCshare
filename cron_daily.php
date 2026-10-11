@@ -65,3 +65,29 @@ foreach ($users as $u) {
 }
 
 echo '[' . date('Y-m-d H:i:s') . "] 每日总结完成，共发送 {$sent} 位用户\n";
+
+// —— 自动更新检测（可选）——
+// 后台「站点设置 → 更新与 API」开启 auto_update 且新 tag 名含触发词时，自动拉取更新。
+require_once BASE_PATH . '/includes/update.php';
+$autoUp = (int)setting('auto_update', 0);
+if ($autoUp) {
+    $kw  = trim((string)setting('auto_update_keyword', 'auto')) !== '' ? setting('auto_update_keyword') : 'auto';
+    $tok = setting('github_token', '');
+    $remote = mc_remote_latest('dieliana/MCshare', $tok);
+    if ($remote && $remote['tag'] !== '') {
+        $localTag = '';
+        if (file_exists(BASE_PATH . '/VERSION') && preg_match('/^v?(\d+\.\d+\.\d+)/', (string)file_get_contents(BASE_PATH . '/VERSION'), $m)) {
+            $localTag = $m[1];
+        }
+        if ($localTag === '' || version_compare($remote['tag'], $localTag, '>')) {
+            if (stripos($remote['tag'], (string)$kw) !== false) {
+                $ur = mc_do_update($remote['tag'], $remote['sha'], 'dieliana/MCshare', 'main');
+                echo '[' . date('Y-m-d H:i:s') . '] 自动更新：' . ($ur['ok'] ? 'v' . $remote['tag'] . ' 成功（更新 ' . $ur['copied'] . ' 文件）' : '失败 ' . $ur['msg']) . "\n";
+            } else {
+                echo '[' . date('Y-m-d H:i:s') . "] 检测到新版本 v{$remote['tag']}，但不含触发词 \"{$kw}\"，未自动更新\n";
+            }
+        } else {
+            echo '[' . date('Y-m-d H:i:s') . '] 无需自动更新（当前已是 v' . $localTag . '）' . "\n";
+        }
+    }
+}
