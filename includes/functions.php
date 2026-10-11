@@ -785,3 +785,23 @@ function following_count(int $userId): int
     if ($userId <= 0) return 0;
     return (int)db()->query('SELECT COUNT(*) FROM follows WHERE follower_id = ' . (int)$userId)->fetchColumn();
 }
+
+/**
+ * 维护模式检查：开启时非管理员访客显示维护页并退出
+ * 后台管理员、前台 admin 角色用户放行
+ */
+function maintenance_check()
+{
+    if ((int)setting('maintenance', 0) !== 1) return;
+    if (function_exists('ensure_session')) ensure_session();
+    if (!empty($_SESSION['admin_id'])) return; // 后台已登录管理员放行，可预览前台
+    $u = current_user();
+    if (!empty($u) && isset($u['role']) && $u['role'] === 'admin') return;
+    http_response_code(503);
+    header('Content-Type: text/html; charset=UTF-8');
+    $msg  = (string)setting('maintenance_msg', '');
+    if ($msg === '') $msg = '站点正在维护升级中，请稍后再来。';
+    $name = (string)setting('site_name', 'MC Modpack Hub');
+    echo '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . ' · 维护中</title><style>body{background:#0e1524;color:#e8eef7;font-family:system-ui,-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}.box{text-align:center;max-width:420px;padding:30px 24px}.ic{font-size:54px;color:#3ddc84;margin-bottom:10px}h1{font-size:24px;margin:10px 0}.msg{color:#8ba0bd;line-height:1.8;word-break:break-word}.sub{color:#5f7391;font-size:12px;margin-top:14px}</style></head><body><div class="box"><div class="ic">&#9881;</div><h1>站点维护中</h1><p class="msg">' . htmlspecialchars($msg, ENT_QUOTES, 'UTF-8') . '</p><div class="sub">' . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . '</div></div></body></html>';
+    exit;
+}

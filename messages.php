@@ -6,6 +6,7 @@ define('BASE_PATH', __DIR__);
 require_once BASE_PATH . '/includes/db.php';
 require_once BASE_PATH . '/includes/functions.php';
 ensure_session();
+maintenance_check();
 
 // ---- AJAX 接口（未登录也可安全返回，供顶部铃铛轮询红点用）----
 if (($_GET['api'] ?? '') === 'unread') {

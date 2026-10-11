@@ -6,6 +6,7 @@ require __DIR__ . '/includes/db.php';
 require __DIR__ . '/includes/functions.php';
 
 ensure_session();
+maintenance_check();
 $u = current_user();
 
 $siteName = setting('site_name', defined('SITE_NAME') ? SITE_NAME : 'MC Modpack Hub');

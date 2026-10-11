@@ -7,6 +7,8 @@
  */
 require __DIR__ . '/includes/db.php';
 require __DIR__ . '/includes/functions.php';
+ensure_session();
+maintenance_check();
 
 $slug = trim($_GET['slug'] ?? '');
 $dlId = (int)($_GET['dl'] ?? 0);

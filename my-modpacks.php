@@ -6,6 +6,7 @@ define('BASE_PATH', __DIR__);
 require_once BASE_PATH . '/includes/db.php';
 require_once BASE_PATH . '/includes/functions.php';
 ensure_session();
+maintenance_check();
 if (!is_logged()) { redirect('/login'); }
 $u = current_user();
 if (!$u) { redirect('/login'); }

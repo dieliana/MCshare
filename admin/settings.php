@@ -14,7 +14,7 @@ $themes = [
 ];
 
 $fields = ['site_name', 'site_desc', 'announcement', 'footer_text', 'theme', 'auto_refresh', 'comment_moderation',
-    'smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_from', 'smtp_fromname', 'smtp_secure', 'github_token'];
+    'smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_from', 'smtp_fromname', 'smtp_secure', 'github_token', 'maintenance', 'maintenance_msg'];
 
 $msg = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -44,6 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'smtp_fromname'=> trim($_POST['smtp_fromname'] ?? ''),
             'smtp_secure'  => in_array($_POST['smtp_secure'] ?? '', ['none', 'ssl', 'tls'], true) ? $_POST['smtp_secure'] : 'tls',
             'github_token' => trim($_POST['github_token'] ?? ''),
+            'maintenance'    => (int)(((($_POST['maintenance'] ?? 0) == 1) ? 1 : 0)),
+            'maintenance_msg'=> trim($_POST['maintenance_msg'] ?? ''),
         ];
         if ($vals['site_name'] === '') {
             $msg = ['err', '站点名称不能为空'];
@@ -192,6 +194,12 @@ $pageTitle = '站点设置';
         <input type="password" name="github_token" value="<?= e($vals['github_token'] ?? '') ?>" placeholder="ghp_xxx / ghp_xxx（留空则不认证）" autocomplete="off">
       </div>
       <p class="hint">获取：GitHub → Settings → Developer settings → Personal access tokens → Generate new token（勾选 repo 权限即可）。Token 仅保存在本站数据库，仅用于 GitHub API 认证。</p>
+    </div>
+    <div class="field" style="border-top:1px solid var(--line);padding-top:20px;margin-top:20px">
+      <div class="section-title" style="margin:0 0 6px">维护模式</div>
+      <p class="hint" style="margin-bottom:8px">开启后前台访客访问将显示维护提示，管理员不受影响；适合升级、维护期间使用。</p>
+      <label class="inline-check"><input type="checkbox" name="maintenance" value="1" <?= !empty($vals['maintenance']) ? 'checked' : '' ?>> 开启维护模式</label>
+      <div class="field" style="margin-top:10px"><label>维护提示语</label><textarea name="maintenance_msg" rows="3" style="width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:9px 12px;font-size:14px"><?= e($vals['maintenance_msg']) ?></textarea></div>
     </div>
     <div class="form-actions"><button class="btn" type="submit">保存设置</button></div>
   </form>
