@@ -1,0 +1,38 @@
+# ============================================================
+#  根目录 .htaccess（Apache 生效；Nginx 请参考 README 配置）
+# ============================================================
+
+# 禁止通过 Web 直接访问数据库配置文件
+<FilesMatch "^config\.php$">
+  Require all denied
+</FilesMatch>
+
+# 禁止访问内部 includes 目录与 SQL 结构文件
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^includes/ - [F,L]
+  RewriteRule ^schema\.sql$ - [F,L]
+  RewriteRule ^config\.example\.php$ - [F,L]
+</IfModule>
+
+# 禁止列出目录
+Options -Indexes
+
+# 默认文档
+DirectoryIndex index.php
+
+# ==================== 前台伪静态 ====================
+<IfModule mod_rewrite.c>
+  RewriteBase /
+  RewriteRule ^modpack/([^/]+)/?$ detail.php?slug=$1 [L,QSA]
+  RewriteRule ^download/([^/]+)/([^/]+)/?$ download.php?slug=$1&dl=$2 [L,QSA]
+  RewriteRule ^download/([^/]+)/?$ download.php?slug=$1 [L,QSA]
+  RewriteRule ^login/?$ login.php [L]
+  RewriteRule ^register/?$ register.php [L]
+  RewriteRule ^logout/?$ logout.php [L]
+  RewriteRule ^profile/?$ profile.php [L]
+  RewriteRule ^submit/?$ submit.php [L]
+  RewriteRule ^my-modpacks/?$ my-modpacks.php [L]
+  RewriteRule ^messages/?$ messages.php [L]
+  RewriteRule ^index\.php$ / [R=301,L]
+</IfModule>
