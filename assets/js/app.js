@@ -8,10 +8,13 @@
   function applyTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
     try { localStorage.setItem('mc_theme', t); } catch (e) {}
+    try { document.cookie = 'mc_theme=' + encodeURIComponent(t) + ';path=/;max-age=31536000'; } catch (e) {}
   }
 
   function currentTheme() {
     var saved = null;
+    try { var m = document.cookie.match(/(?:^|; )mc_theme=([^;]+)/); if (m) saved = decodeURIComponent(m[1]); } catch (e) {}
+    if (saved && THEMES.indexOf(saved) !== -1) return saved;
     try { saved = localStorage.getItem('mc_theme'); } catch (e) {}
     if (saved && THEMES.indexOf(saved) !== -1) return saved;
     var cur = document.documentElement.getAttribute('data-theme');

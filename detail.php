@@ -22,7 +22,7 @@ $st->execute([$slug]);
 $modpack = $st->fetch();
 
 $siteName = setting('site_name', defined('SITE_NAME') ? SITE_NAME : 'MC Modpack Hub');
-$theme    = setting('theme', 'emerald');
+$theme    = mc_active_theme();
 $logo     = setting('logo', '');
 $favicon  = setting('favicon', '');
 

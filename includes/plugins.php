@@ -8,10 +8,22 @@
  */
 require_once __DIR__ . '/hooks.php';
 
+/** 当前生效主题：后台设置 + 访客 Cookie 记忆覆盖 */
+function mc_active_theme()
+{
+    $theme = setting('theme', 'emerald');
+    $builtin = ['emerald', 'ocean', 'violet', 'forest', 'light'];
+    if (!empty($_COOKIE['mc_theme'])) {
+        $c = preg_replace('/[^a-zA-Z0-9_-]/', '', (string)$_COOKIE['mc_theme']);
+        if ($c !== '' && (in_array($c, $builtin) || is_dir(dirname(__DIR__) . '/themes/' . $c))) $theme = $c;
+    }
+    return $theme;
+}
+
 /** 输出启用主题的 theme.css 与可选主题列表（前台 <head> 使用） */
 function mc_theme_assets()
 {
-    $theme = setting('theme', 'emerald');
+    $theme = mc_active_theme();
     $css = dirname(__DIR__) . '/themes/' . $theme . '/theme.css';
     if (is_file($css)) {
         echo '<link rel="stylesheet" href="/themes/' . rawurlencode($theme) . '/theme.css">' . PHP_EOL;
@@ -63,3 +75,28 @@ function load_plugins()
         }
     }
 }
+
+/** Cookie 使用提示条（首次访问显示，点同意后写 mc_cookie_consent 不再出现） */
+function mc_cookie_bar()
+{
+    echo <<<HTML
+<div id="mc-cookie-bar" style="display:none;position:fixed;left:0;right:0;bottom:0;z-index:9999;background:var(--panel);border-top:1px solid var(--line);padding:12px 18px;font-size:13px;color:var(--text);align-items:center;gap:14px;flex-wrap:wrap;box-shadow:0 -6px 24px rgba(0,0,0,.25)">
+  <span style="flex:1;min-width:240px">本站使用 Cookie 以提供更佳的浏览体验，继续访问即表示你同意本站使用 Cookie。</span>
+  <button type="button" id="mc-cookie-ok" style="background:var(--accent);color:var(--accent-fg);border:none;padding:8px 18px;border-radius:8px;font-weight:600;cursor:pointer">知道了</button>
+</div>
+<script>
+(function(){
+  try{ if (localStorage.getItem('mc_cookie_consent')) return; }catch(e){}
+  var bar=document.getElementById('mc-cookie-bar'); if(!bar) return;
+  bar.style.display='flex';
+  var ok=document.getElementById('mc-cookie-ok');
+  if(ok) ok.addEventListener('click', function(){
+    try{ localStorage.setItem('mc_cookie_consent','1'); }catch(e){}
+    document.cookie='mc_cookie_consent=1;path=/;max-age=31536000';
+    bar.style.display='none';
+  });
+})();
+</script>
+HTML;
+}
+add_action('mc_body_end', 'mc_cookie_bar');

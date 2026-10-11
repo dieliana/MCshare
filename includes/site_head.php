@@ -8,7 +8,7 @@ load_plugins();
 $siteName = apply_filters('mc_site_name', setting('site_name', defined('SITE_NAME') ? SITE_NAME : 'MC Modpack Hub'));
 $logo     = setting('logo', '');
 $favicon  = setting('favicon', '');
-$theme    = setting('theme', 'emerald');
+$theme    = mc_active_theme();
 $announce = setting('announcement', '');
 $u        = current_user();
 $pageTitle = $pageTitle ?? $siteName;
@@ -90,6 +90,7 @@ $pageTitle = $pageTitle ?? $siteName;
   </div>
 </header>
 <?php do_action('mc_after_header'); ?>
+<?php do_action('mc_body_end'); ?>
 
 <?php if ($announce !== ''): ?>
 <div class="announce"><div class="wrap"><i class="fa-solid fa-bullhorn"></i> <?= e($announce) ?></div></div>

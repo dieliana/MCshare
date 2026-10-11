@@ -33,6 +33,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             session_regenerate_id(true);
             $_SESSION['user_id'] = (int)$u['id'];
+            if (!empty($_POST['remember'])) {
+                $p = session_get_cookie_params();
+                setcookie(session_name(), session_id(), [
+                    'expires'  => time() + 30 * 86400,
+                    'path'     => $p['path'],
+                    'domain'   => $p['domain'] ?? '',
+                    'secure'   => !empty($p['secure']),
+                    'httponly' => true,
+                    'samesite' => 'Lax',
+                ]);
+            }
             $after = $_SESSION['after_login'] ?? '/';
             unset($_SESSION['after_login']);
             redirect($after);
@@ -61,6 +72,10 @@ include __DIR__ . '/includes/site_head.php';
           <span class="captcha-q"><?= e($captchaQ) ?></span>
           <input type="text" name="captcha" maxlength="2" placeholder="答案" required>
         </div>
+
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);margin:8px 0">
+          <input type="checkbox" name="remember" value="1"> 记住我（30 天内保持登录）
+        </label>
 
         <button class="btn btn-block" type="submit">登 录</button>
       </form>
