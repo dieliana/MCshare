@@ -213,23 +213,20 @@ function make_thumb($srcPath, $maxW = 480)
 
     $nh = (int)round($h * $maxW / $w);
     $dst = imagecreatetruecolor($maxW, $nh);
-    if (!$dst) { imagedestroy($im); return null; }
+    if (!$dst) { return null; }
     if (in_array($mime, ['image/png', 'image/webp', 'image/gif'], true)) {
         imagealphablending($dst, false);
         imagesavealpha($dst, true);
     }
     imagecopyresampled($dst, $im, 0, 0, 0, 0, $maxW, $nh, $w, $h);
-    imagedestroy($im);
-
     $dir = dirname($srcPath);
     $base = pathinfo($srcPath, PATHINFO_FILENAME);
     if (function_exists('imagewebp')) {
         $tp = $dir . '/' . $base . '_thumb.webp';
-        if (@imagewebp($dst, $tp, 75)) { imagedestroy($dst); return basename($tp); }
+        if (@imagewebp($dst, $tp, 75)) { return basename($tp); }
     }
     $tp = $dir . '/' . $base . '_thumb.jpg';
-    if (@imagejpeg($dst, $tp, 78)) { imagedestroy($dst); return basename($tp); }
-    imagedestroy($dst);
+    if (@imagejpeg($dst, $tp, 78)) { return basename($tp); }
     return null;
 }
 
