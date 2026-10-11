@@ -17,7 +17,7 @@ $verFile = __DIR__ . '/../VERSION';
 
 $remote = null; // ['sha','short','msg','date','ver']
 $local  = (file_exists($verFile) && ($_v = trim(file_get_contents($verFile)))) ? $_v : '';
-$appVersion = '1.0.0';
+$appVersion = '1.1.1';
 function up_local_ver($local)
 {
     if (preg_match('/^v?\d+(\.\d+)+/', $local, $m)) return $m[0];
