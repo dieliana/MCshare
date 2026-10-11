@@ -12,7 +12,7 @@
 
 * **扩展开发**：**主题系统**——`themes/主题名/theme.php`（元信息）+ 可选 `theme.css`（覆盖变量 / 样式），可上传 zip 安装；**插件系统**——`plugins/插件id/plugin.php`，通过 `add_action` / `add_filter` 注册扩展，内置钩子：`mc_body_top` / `mc_after_header` / `mc_body_end` / `mc_list_item` / `mc_detail_after_content` / `mc_site_name`；**对外 API**——后台开启后返回 JSON（`/api.php?act=modpacks|modpack|categories|tags`，伪静态 `/api/modpacks`），可设 API Key 鉴权，供其他同源码网站调用导入整合包数据。
 
-* **WordPress 兼容层**（`includes/wp-compat/`）：可识别并加载 **WordPress 主题**（`themes/xx/style.css` 含 `Theme Name:` 头 → 加载其 `functions.php`，触发 `wp_head` / `wp_footer`，支持 `wp_enqueue_style/script`、`add_shortcode`、`wp_add_inline_style` 等）与 **WordPress 插件**（主文件含 `Plugin Name:` 头 → 加载，支持 `add_action` / `add_filter` / `add_shortcode` / `get_option` / `update_option` / `wp_enqueue_*` / 国际化与转义函数）。兼容策略：页面主体仍由 MCshare 渲染，WP 主题/插件作为「增强层」贡献钩子、短代码、资源与样式；依赖 `$wpdb` / `WP_Query` / 完整用户系统的重型 WP 生态不在支持范围。示例：`themes/wp-sample/`、`plugins/wp-demo/`。
+* **WordPress 兼容层**（`includes/wp-compat/`）：可识别并加载 **WordPress 主题**（`themes/xx/style.css` 含 `Theme Name:` 头 → 加载其 `functions.php`，触发 `wp_head` / `wp_footer`，支持 `wp_enqueue_style/script`、`add_shortcode`、`wp_add_inline_style` 等）与 **WordPress 插件**（主文件含 `Plugin Name:` 头 → 加载，支持 `add_action` / `add_filter` / `add_shortcode` / `get_option` / `update_option` / `wp_enqueue_*` / 国际化与转义函数）。兼容策略：页面主体仍由 MCshare 渲染，WP 主题/插件作为「增强层」贡献钩子、短代码、资源与样式；依赖 `$wpdb` / `WP_Query` / 完整用户系统的重型 WP 生态不在支持范围。示例：`themes/wp-sample/`、`plugins/wp-demo/`。附 **LoliMeow 风格化主题** `themes/loli-meow/`（完整 WP 主题 LoliMeow 无法 1:1 加载，本主题移植其萌系设计语言，含阿里妈妈字体）。
 
 * **Web 安装向导**：环境检测 → 数据库配置（地址 / 端口 / 库名 / 账号 / 密码，可自动建库）→ 站点信息与管理员 → 执行安装（建表、写入配置、创建管理员）。
 

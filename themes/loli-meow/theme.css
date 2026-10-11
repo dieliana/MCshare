@@ -1,0 +1,122 @@
+/* ============================================================
+   LoliMeow 风格化主题 · theme.css
+   移植自 WP 主题 LoliMeow 的萌系设计语言，映射到 MCshare 的 DOM 与 CSS 变量。
+   叠加在 assets/css/style.css 之后加载。
+   ============================================================ */
+
+/* 阿里妈妈字体 */
+@font-face {
+  font-family: 'loli-font';
+  src: url('fonts/alimama.woff2') format('woff2');
+  font-display: swap;
+}
+
+/* 萌系浅色配色（覆盖 MCshare 变量） */
+:root {
+  --bg: #fff5f9;
+  --bg2: #ffeef5;
+  --panel: #ffffff;
+  --header: rgba(255, 255, 255, 0.72);
+  --line: #ffd6e5;
+  --accent: #ff4c9d;
+  --accent2: #8183ff;
+  --text: #3a3340;
+  --muted: #a999b0;
+  --danger: #d8000f;
+  --radius: 14px;
+}
+
+/* 主字体应用 */
+body {
+  font-family: 'loli-font', 'Microsoft Yahei', 'PingFang SC', sans-serif;
+}
+.site-header .brand-name,
+.site-title {
+  font-family: 'loli-font', 'Microsoft Yahei', sans-serif;
+}
+
+/* 粉色滚动条（LoliMeow 标志） */
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: #ffeef5; }
+*::-webkit-scrollbar-thumb {
+  background: #ff9ecb; border-radius: 5px; border: 2px solid #ffffff;
+}
+*::-webkit-scrollbar-thumb:hover { background: #ff4c9d; }
+*::-webkit-scrollbar-track:hover { background: #f6dfea; }
+
+/* 彩虹渐变文字（站点名） */
+.brand-name,
+.site-title {
+  background: linear-gradient(90deg, #ffadad, #ffd6a5, #cbfdb1, #acbff1, #efa7ec, #ffd1dc, #c5a3ff, #ffadad);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: loli-grad 8s linear infinite;
+  letter-spacing: 1px;
+}
+@keyframes loli-grad { to { background-position: 300% 0; } }
+
+/* 毛玻璃头部 */
+.site-header {
+  background: var(--header) !important;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+
+/* 卡片萌系化 */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 20px rgba(255, 120, 170, 0.10);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 26px rgba(255, 120, 170, 0.20);
+}
+.card .thumb {
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+/* 胶囊标签 / 徽章 / 版本 */
+.tag,
+.badge,
+.card-meta .ver {
+  background: #ffeef5 !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 25px !important;
+  color: var(--text) !important;
+}
+.tag:hover,
+.badge:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 2px 2px 0 0 var(--accent);
+}
+
+/* 头部导航链接萌化 */
+.site-nav .nav-link {
+  border-radius: 25px;
+  transition: all 0.3s ease;
+}
+.site-nav .nav-link:hover {
+  background: #ffeef5;
+  color: var(--accent);
+}
+
+/* 背景光晕柔和化 */
+.bg-glow {
+  opacity: 0.55;
+  filter: hue-rotate(-18deg);
+}
+
+/* 按钮主色切粉 */
+.btn-primary,
+button.btn {
+  background: linear-gradient(90deg, #ff4c9d, #8183ff) !important;
+  border: none !important;
+  color: #fff !important;
+}
