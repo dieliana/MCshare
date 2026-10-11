@@ -189,6 +189,71 @@ function cover_url($cover)
 }
 
 /**
+ * 为图片生成压缩缩略图（webp 优先，回退 jpg）
+ * 仅当原图宽度超过 $maxW 才生成；命名 {原文件名}_thumb.{webp|jpg}，与原图同目录
+ */
+function make_thumb($srcPath, $maxW = 480)
+{
+    if (!function_exists('imagecreatetruecolor')) return null;
+    if (!is_file($srcPath)) return null;
+    $info = @getimagesize($srcPath);
+    if ($info === false) return null;
+    [$w, $h] = $info;
+    $mime = $info['mime'];
+    if ($w <= $maxW) return null; // 原图已足够小，不生成
+
+    switch ($mime) {
+        case 'image/jpeg': $im = @imagecreatefromjpeg($srcPath); break;
+        case 'image/png':  $im = @imagecreatefrompng($srcPath); break;
+        case 'image/webp': $im = @imagecreatefromwebp($srcPath); break;
+        case 'image/gif':  $im = @imagecreatefromgif($srcPath); break;
+        default: return null;
+    }
+    if (!$im) return null;
+
+    $nh = (int)round($h * $maxW / $w);
+    $dst = imagecreatetruecolor($maxW, $nh);
+    if (!$dst) { imagedestroy($im); return null; }
+    if (in_array($mime, ['image/png', 'image/webp', 'image/gif'], true)) {
+        imagealphablending($dst, false);
+        imagesavealpha($dst, true);
+    }
+    imagecopyresampled($dst, $im, 0, 0, 0, 0, $maxW, $nh, $w, $h);
+    imagedestroy($im);
+
+    $dir = dirname($srcPath);
+    $base = pathinfo($srcPath, PATHINFO_FILENAME);
+    if (function_exists('imagewebp')) {
+        $tp = $dir . '/' . $base . '_thumb.webp';
+        if (@imagewebp($dst, $tp, 75)) { imagedestroy($dst); return basename($tp); }
+    }
+    $tp = $dir . '/' . $base . '_thumb.jpg';
+    if (@imagejpeg($dst, $tp, 78)) { imagedestroy($dst); return basename($tp); }
+    imagedestroy($dst);
+    return null;
+}
+
+/**
+ * 批量生成 uploads 下所有图片的缩略图，返回生成的个数（跳过已存在的 _thumb）
+ */
+function generate_all_thumbs()
+{
+    if (!defined('UPLOAD_DIR')) return 0;
+    $root = rtrim(UPLOAD_DIR, '/\\');
+    if (!is_dir($root)) return 0;
+    $n = 0;
+    $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS));
+    foreach ($it as $f) {
+        if (!$f->isFile()) continue;
+        $ext = strtolower($f->getExtension());
+        if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'], true)) continue;
+        if (strpos($f->getFilename(), '_thumb.') !== false) continue;
+        if (make_thumb($f->getPathname())) $n++;
+    }
+    return $n;
+}
+
+/**
  * 列表/卡片用缩略图 URL
  * 若同目录存在 _thumb.webp / _thumb.jpg 则用缩略图，否则回退原图；外链不处理
  */

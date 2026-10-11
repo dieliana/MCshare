@@ -150,7 +150,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (is_dir($tmpExt)) up_rrmdir($tmpExt);
 
             if ($ok) {
-                $msg = ['ok', '更新完成：已更新 ' . $copied . ' 个文件，跳过保护文件 ' . $skipped . ' 个。当前版本 ' . $remote['short']];
+                $thumbsMsg = '';
+                if (function_exists('generate_all_thumbs')) {
+                    $tn = generate_all_thumbs(); // 更新后自动为图片生成缩略图
+                    if ($tn) $thumbsMsg = '（已生成 ' . $tn . ' 个缩略图）';
+                }
+                @unlink(__DIR__ . '/../batch_thumbs.php'); // 更新后自动清理一次性脚本
+                $msg = ['ok', '更新完成：已更新 ' . $copied . ' 个文件，跳过保护文件 ' . $skipped . ' 个。当前版本 ' . $remote['short'] . $thumbsMsg];
                 unset($_SESSION['update_remote']);
                 $local = 'v' . $tag . ' ' . $remote['sha'];
                 $localVer = 'v' . $tag;

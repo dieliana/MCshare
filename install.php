@@ -120,6 +120,8 @@ if ($postedStep === 4) {
             // 6) 写安装锁
             @file_put_contents($lock, date('Y-m-d H:i:s') . "\n");
 
+            @unlink($base . '/batch_thumbs.php'); // 全新安装无旧图片，直接清理一次性脚本
+
             $done = true;
         } catch (Exception $ex) {
             $errors[] = $ex->getMessage();
