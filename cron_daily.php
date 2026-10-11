@@ -69,7 +69,7 @@ echo '[' . date('Y-m-d H:i:s') . "] 每日总结完成，共发送 {$sent} 位�
 // —— 自动更新检测（可选）——
 // 后台「站点设置 → 更新与 API」开启 auto_update 且新 tag 名含触发词时，自动拉取更新。
 require_once BASE_PATH . '/includes/update.php';
-$autoUp = (int)setting('auto_update', 0);
+$autoUp = (int)setting('auto_update', 1);
 if ($autoUp) {
     $kw  = trim((string)setting('auto_update_keyword', 'auto')) !== '' ? setting('auto_update_keyword') : 'auto';
     $tok = setting('github_token', '');

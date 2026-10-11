@@ -82,6 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $vals = [];
 foreach ($fields as $f) $vals[$f] = setting($f, '', !empty($didSave));
 if ($vals['auto_refresh'] === '') $vals['auto_refresh'] = '120';
+if ($vals['auto_update'] === '') $vals['auto_update'] = '1';
 $vals['logo']    = setting('logo', '');
 $vals['favicon'] = setting('favicon', '');
 

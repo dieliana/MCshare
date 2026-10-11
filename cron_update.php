@@ -16,7 +16,7 @@ require_once BASE_PATH . '/includes/db.php';
 require_once BASE_PATH . '/includes/functions.php';
 require_once BASE_PATH . '/includes/update.php';
 
-$autoUp = (int)setting('auto_update', 0);
+$autoUp = (int)setting('auto_update', 1);
 echo '[' . date('Y-m-d H:i:s') . '] 自动更新检测开始（开关：' . ($autoUp ? '开' : '关') . '）' . "\n";
 if (!$autoUp) {
     echo '[' . date('Y-m-d H:i:s') . '] 未开启自动更新，退出' . "\n";

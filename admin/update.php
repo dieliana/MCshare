@@ -27,7 +27,7 @@ function up_local_ver($local)
 $localVer = up_local_ver($local);
 
 // 自动更新设置
-$autoUpdate = (int)setting('auto_update', 0);
+$autoUpdate = (int)setting('auto_update', 1);
 $autoKeyword = trim((string)setting('auto_update_keyword', 'auto')) !== '' ? setting('auto_update_keyword') : 'auto';
 
 // ---------- 动作 ----------
