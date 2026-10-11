@@ -220,7 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $slug = imp_slug($title);
                 try {
                     db()->prepare('INSERT INTO modpacks (slug,title,tagline,content,cover,mc_version,mod_loader,author,author_links,download_url,source_type,source_name,category_id,user_id,status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
-                        ->execute([$slug, $title, mb_substr($desc, 0, 240), $desc, $cover, $ver, $loader, '', '', $dl, 'repost', $domain, $cat ?: null, 0, 0]);
+                        ->execute([$slug, $title, mb_substr($desc, 0, 240), rich_html($desc), $cover, $ver, $loader, '', '', $dl, 'repost', $domain, $cat ?: null, 0, 0]);
                     $ok++; $imported[] = '<a href="modpack-form.php?id=' . (int)db()->lastInsertId() . '" class="link">' . e($title) . '</a>';
                 } catch (Exception $e) { $fail++; }
             }

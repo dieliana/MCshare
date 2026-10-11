@@ -60,7 +60,7 @@ $mpId = 0;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $mp['title']        = trim($_POST['title'] ?? '');
     $mp['tagline']      = trim($_POST['tagline'] ?? '');
-    $mp['content']      = trim($_POST['content'] ?? '');
+    $mp['content']      = rich_html(trim($_POST['content'] ?? ''));
     $mp['mc_version']   = trim($_POST['mc_version'] ?? '');
     $mp['mod_loader']   = trim($_POST['mod_loader'] ?? '');
     $mp['author']       = trim($_POST['author'] ?? '');

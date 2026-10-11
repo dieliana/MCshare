@@ -17,7 +17,7 @@ $verFile = __DIR__ . '/../VERSION';
 
 $remote = null; // ['sha','short','msg','date','ver']
 $local  = (file_exists($verFile) && ($_v = trim(file_get_contents($verFile)))) ? $_v : '';
-$appVersion = '1.1.3';
+$appVersion = '1.1.4';
 $githubToken = setting('github_token', '');
 function up_local_ver($local)
 {
@@ -167,6 +167,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // 页面展示用远程信息（session 恢复）
 if (!$remote && !empty($_SESSION['update_remote'])) $remote = $_SESSION['update_remote'];
+
+// 本地已是最新？（本地记录的 commit sha 与远程 sha 一致）
+$isLatest = false;
+if ($remote && preg_match('/\b([0-9a-f]{40})\b/i', $local, $m)) {
+    $isLatest = (strtolower($m[1]) === strtolower($remote['sha']));
+}
 ?>
 <?php include __DIR__ . '/_nav.php'; ?>
 <!DOCTYPE html>
@@ -200,6 +206,7 @@ if (!$remote && !empty($_SESSION['update_remote'])) $remote = $_SESSION['update_
           <?php if ($remote): ?>
             <span class="pill green"><?= e($remote['ver']) ?></span> · <?= e($remote['date']) ?><br>
             <span class="muted" style="font-size:13px"><?= e(mb_substr($remote['msg'], 0, 120)) ?></span>
+            <?php if ($isLatest): ?><br><span class="pill green"><i class="fa-solid fa-check"></i> 已是最新版本，无需更新</span><?php endif; ?>
           <?php else: ?>
             <span class="muted">尚未检查</span>
           <?php endif; ?>
@@ -213,7 +220,7 @@ if (!$remote && !empty($_SESSION['update_remote'])) $remote = $_SESSION['update_
         <input type="hidden" name="action" value="check">
         <button class="btn" type="submit"><i class="fa-solid fa-rotate"></i> 检查更新</button>
       </form>
-      <?php if ($remote): ?>
+      <?php if ($remote && !$isLatest): ?>
       <form method="post" style="display:inline" onsubmit="return confirm('确定更新到 ' + '<?= e($remote['short']) ?>' + ' 吗？\n将覆盖除 config.php / install.lock / uploads 外的所有站点文件。')">
         <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
         <input type="hidden" name="action" value="update">

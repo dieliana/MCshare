@@ -286,7 +286,7 @@ if (!$modpack) {
     <?php if (trim($modpack['content'])): ?>
     <div class="detail-content">
       <h2>整合包介绍</h2>
-      <div class="content-body"><?= nl2br(e($modpack['content'])) ?></div>
+      <div class="content-body"><?= rich_html($modpack['content']) ?></div>
     </div>
     <?php endif; ?>
     </article>

@@ -234,6 +234,26 @@ function make_thumb($srcPath, $maxW = 480)
 }
 
 /**
+ * 富文本净化：允许常见排版标签，剥离脚本/事件属性/危险协议
+ * 用于整合包详细介绍等用户提交内容的安全展示
+ */
+function rich_html($html)
+{
+    if ($html === null || $html === '') return '';
+    $allowed = '<p><br><b><strong><i><em><u><s><del><span><div><ul><ol><li><h1><h2><h3><h4><h5><blockquote><code><pre><table><thead><tbody><tr><td><th><hr><img><a>';
+    $html = strip_tags($html, $allowed);
+    // 剥离事件属性 onXxx
+    $html = preg_replace('/\son[a-z]+\s*=\s*(["\'])[^"\']*\1/i', '', $html);
+    $html = preg_replace('/\son[a-z]+\s*=\s*[^\s>]+/i', '', $html);
+    // 危险协议
+    $html = preg_replace('/javascript\s*:/i', '', $html);
+    $html = preg_replace('/\b(?:expression|vbscript)\s*:/i', '', $html);
+    // a 仅允许 http(s)/锚点/相对
+    $html = preg_replace('/<a\s+href\s*=\s*["\'](?!https?:|\/|#|mailto:)[^"\']*["\']/i', '<a href="#', $html);
+    return $html;
+}
+
+/**
  * 批量生成 uploads 下所有图片的缩略图，返回生成的个数（跳过已存在的 _thumb）
  */
 function generate_all_thumbs()
