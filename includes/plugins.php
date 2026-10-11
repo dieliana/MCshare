@@ -22,6 +22,12 @@ function mc_theme_assets()
         if (!in_array($t, $all, true)) $all[] = $t;
     }
     echo '<script>window.MC_THEMES = ' . json_encode($all) . ';</script>' . PHP_EOL;
+
+    // 主页背景图片（后台可自定义，覆盖全屏、固定不随滚动）
+    $bg = trim((string)setting('background_img', ''));
+    if ($bg !== '') {
+        echo '<style>body{background-image:url(\'' . esc_url(cover_url($bg)) . '\');background-size:cover;background-attachment:fixed;background-position:center;} .bg-glow{opacity:.4;}</style>' . PHP_EOL;
+    }
 }
 
 function load_plugins()

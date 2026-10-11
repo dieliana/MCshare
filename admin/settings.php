@@ -14,7 +14,7 @@ $themes = [
 ];
 
 $fields = ['site_name', 'site_desc', 'announcement', 'footer_text', 'theme', 'auto_refresh', 'comment_moderation',
-    'smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_from', 'smtp_fromname', 'smtp_secure', 'github_token', 'maintenance', 'maintenance_msg', 'api_enabled', 'api_key'];
+    'smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_from', 'smtp_fromname', 'smtp_secure', 'github_token', 'maintenance', 'maintenance_msg', 'api_enabled', 'api_key', 'background_img'];
 
 $msg = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -48,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'api_key'      => trim($_POST['api_key'] ?? ''),
             'maintenance'    => (int)(((($_POST['maintenance'] ?? 0) == 1) ? 1 : 0)),
             'maintenance_msg'=> trim($_POST['maintenance_msg'] ?? ''),
+            'background_img' => trim($_POST['background_img'] ?? ''),
         ];
         if ($vals['site_name'] === '') {
             $msg = ['err', '站点名称不能为空'];
@@ -148,6 +149,12 @@ $pageTitle = '站点设置';
       <?php endif; ?>
       <label class="file-btn"><i class="fa-solid fa-folder-open"></i> 选择 Favicon<input type="file" name="favicon" accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml,.ico" onchange="this.parentNode.nextElementSibling.textContent=this.files[0]?this.files[0].name:'"></label><span class="file-name"></span>
       <p class="hint">建议使用 png/ico/svg 图标（如 32×32 或 64×64）</p>
+    </div>
+
+    <div class="field">
+      <label>主页背景图片（可选）</label>
+      <input type="text" name="background_img" value="<?= e($vals['background_img'] ?? '') ?>" placeholder="填写图片地址，如 uploads/xxx.jpg 或图库复制的完整链接（留空则不设置）">
+      <p class="hint">设置后前台主页以该图为背景（覆盖全屏、固定不随滚动），并保留主题底色叠加。也可先在「图库」上传图片后复制其路径填入。</p>
     </div>
 
     <div class="field">
