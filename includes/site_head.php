@@ -3,7 +3,9 @@
  * 前台公共头部（登录 / 注册 / 用户中心等页面引入）
  * 需先加载 db.php 与 functions.php
  */
-$siteName = setting('site_name', defined('SITE_NAME') ? SITE_NAME : 'MC Modpack Hub');
+require_once __DIR__ . '/plugins.php';
+load_plugins();
+$siteName = apply_filters('mc_site_name', setting('site_name', defined('SITE_NAME') ? SITE_NAME : 'MC Modpack Hub'));
 $logo     = setting('logo', '');
 $favicon  = setting('favicon', '');
 $theme    = setting('theme', 'emerald');
@@ -20,8 +22,21 @@ $pageTitle = $pageTitle ?? $siteName;
 <?php if ($favicon): ?><link rel="icon" href="<?= e(cover_url($favicon)) ?>"><?php endif; ?>
 <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
+<?php
+// 加载自定义主题的 theme.css（若当前主题为 themes/ 下的目录主题）
+$_themeCss = __DIR__ . '/../themes/' . $theme . '/theme.css';
+if (is_file($_themeCss)) echo '<link rel="stylesheet" href="/themes/' . rawurlencode($theme) . '/theme.css">';
+// 收集全部可用主题（内置 + themes/ 自定义），供前台切换按钮轮换
+$_allThemes = ['emerald', 'ocean', 'violet', 'forest', 'light'];
+foreach (glob(__DIR__ . '/../themes/*/theme.css') ?: [] as $_tf) {
+    $_t = basename(dirname($_tf));
+    if (!in_array($_t, $_allThemes, true)) $_allThemes[] = $_t;
+}
+echo '<script>window.MC_THEMES = ' . json_encode($_allThemes) . ';</script>';
+?>
 </head>
 <body>
+<?php do_action('mc_body_top'); ?>
 <div class="bg-glow"></div>
 
 <header class="site-header">
@@ -34,6 +49,19 @@ $pageTitle = $pageTitle ?? $siteName;
       <?php endif; ?>
       <span class="brand-name"><?= e($siteName) ?></span>
     </a>
+    <?php
+      $_nav = json_decode((string)setting('nav_items', '[]'), true);
+      if (!is_array($_nav)) $_nav = [];
+      $_nav = array_filter($_nav, fn($n) => !empty($n['visible']) && trim((string)($n['title'] ?? '')) !== '');
+      usort($_nav, fn($a, $b) => ($a['sort'] ?? 0) <=> ($b['sort'] ?? 0));
+    ?>
+    <?php if ($_nav): ?>
+      <nav class="site-nav">
+        <?php foreach ($_nav as $_n): ?>
+          <a class="nav-link" href="<?= e($_n['url'] ?? '#') ?>"><?= e($_n['title']) ?></a>
+        <?php endforeach; ?>
+      </nav>
+    <?php endif; ?>
     <div style="flex:1"></div>
     <button type="button" class="theme-btn" title="切换主题" onclick="window.cycleTheme && window.cycleTheme()"><i class="fa-solid fa-palette"></i></button>
     <?php if ($u): ?>
@@ -71,6 +99,7 @@ $pageTitle = $pageTitle ?? $siteName;
     <?php endif; ?>
   </div>
 </header>
+<?php do_action('mc_after_header'); ?>
 
 <?php if ($announce !== ''): ?>
 <div class="announce"><div class="wrap"><i class="fa-solid fa-bullhorn"></i> <?= e($announce) ?></div></div>

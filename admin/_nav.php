@@ -18,6 +18,9 @@
     <a href="comments.php" class="<?= basename($_SERVER['PHP_SELF']) === 'comments.php' ? 'on' : '' ?>"><i class="fa-solid fa-comments"></i> 评论管理</a>
     <a href="mail.php" class="<?= basename($_SERVER['PHP_SELF']) === 'mail.php' ? 'on' : '' ?>"><i class="fa-solid fa-envelope"></i> 邮件发送</a>
     <a href="settings.php" class="<?= basename($_SERVER['PHP_SELF']) === 'settings.php' ? 'on' : '' ?>"><i class="fa-solid fa-gear"></i> 站点设置</a>
+    <a href="themes.php" class="<?= basename($_SERVER['PHP_SELF']) === 'themes.php' ? 'on' : '' ?>"><i class="fa-solid fa-palette"></i> 主题管理</a>
+    <a href="plugins.php" class="<?= basename($_SERVER['PHP_SELF']) === 'plugins.php' ? 'on' : '' ?>"><i class="fa-solid fa-puzzle-piece"></i> 插件管理</a>
+    <a href="nav.php" class="<?= basename($_SERVER['PHP_SELF']) === 'nav.php' ? 'on' : '' ?>"><i class="fa-solid fa-bars"></i> 导航管理</a>
     <a href="update.php" class="<?= basename($_SERVER['PHP_SELF']) === 'update.php' ? 'on' : '' ?>"><i class="fa-solid fa-arrow-down-up-across-line"></i> 系统更新</a>
   </nav>
   <div class="side-foot">

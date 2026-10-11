@@ -53,5 +53,11 @@ if (preg_match('#^/download/([^/]+)$#', $path, $m)) {
     return true;
 }
 
+if (preg_match('#^/api/([a-z_]+)$#', $path, $m)) {
+    $_GET['act'] = $m[1];
+    require __DIR__ . '/api.php';
+    return true;
+}
+
 // 其余（静态资源 / admin / uploads 等）交给 PHP 内置服务器默认处理
 return false;

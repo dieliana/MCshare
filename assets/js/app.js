@@ -3,7 +3,7 @@
   'use strict';
 
   /* ---------- 主题切换 ---------- */
-  var THEMES = ['emerald', 'ocean', 'violet', 'forest', 'light'];
+  var THEMES = (window.MC_THEMES && window.MC_THEMES.length) ? window.MC_THEMES : ['emerald', 'ocean', 'violet', 'forest', 'light'];
 
   function applyTheme(t) {
     document.documentElement.setAttribute('data-theme', t);

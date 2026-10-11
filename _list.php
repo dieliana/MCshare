@@ -44,6 +44,7 @@
           <?php foreach ($mtags as $tg): ?><span class="tag">#<?= e($tg['name']) ?></span><?php endforeach; ?>
         </div>
         <?php endif; ?>
+        <?php do_action('mc_list_item', $m); ?>
       </div>
     </a>
     <?php endforeach; ?>

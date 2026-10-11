@@ -14,7 +14,7 @@ $themes = [
 ];
 
 $fields = ['site_name', 'site_desc', 'announcement', 'footer_text', 'theme', 'auto_refresh', 'comment_moderation',
-    'smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_from', 'smtp_fromname', 'smtp_secure', 'github_token', 'maintenance', 'maintenance_msg'];
+    'smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_from', 'smtp_fromname', 'smtp_secure', 'github_token', 'maintenance', 'maintenance_msg', 'api_enabled', 'api_key'];
 
 $msg = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -44,6 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'smtp_fromname'=> trim($_POST['smtp_fromname'] ?? ''),
             'smtp_secure'  => in_array($_POST['smtp_secure'] ?? '', ['none', 'ssl', 'tls'], true) ? $_POST['smtp_secure'] : 'tls',
             'github_token' => trim($_POST['github_token'] ?? ''),
+            'api_enabled'  => (int)((( $_POST['api_enabled'] ?? 0) == 1) ? 1 : 0),
+            'api_key'      => trim($_POST['api_key'] ?? ''),
             'maintenance'    => (int)(((($_POST['maintenance'] ?? 0) == 1) ? 1 : 0)),
             'maintenance_msg'=> trim($_POST['maintenance_msg'] ?? ''),
         ];
@@ -200,6 +202,15 @@ $pageTitle = '站点设置';
       <p class="hint" style="margin-bottom:8px">开启后前台访客访问将显示维护提示，管理员不受影响；适合升级、维护期间使用。</p>
       <label class="inline-check"><input type="checkbox" name="maintenance" value="1" <?= !empty($vals['maintenance']) ? 'checked' : '' ?>> 开启维护模式</label>
       <div class="field" style="margin-top:10px"><label>维护提示语</label><textarea name="maintenance_msg" rows="3" style="width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:9px 12px;font-size:14px"><?= e($vals['maintenance_msg']) ?></textarea></div>
+    </div>
+    <div class="field" style="border-top:1px solid var(--line);padding-top:20px;margin-top:20px">
+      <div class="section-title" style="margin:0 0 6px">API 接口（供外部调用整合包数据）</div>
+      <p class="hint" style="margin-bottom:8px">开启后，其他同源码网站或第三方可通过接口拉取已发布的整合包数据（列表 / 详情 / 分类 / 标签）。</p>
+      <label class="inline-check"><input type="checkbox" name="api_enabled" value="1" <?= !empty($vals['api_enabled']) ? 'checked' : '' ?>> 开启 API</label>
+      <div class="field" style="margin-top:10px"><label>API Key（可选）</label>
+        <input type="text" name="api_key" value="<?= e($vals['api_key']) ?>" placeholder="留空则不鉴权；填写后调用需带 key 参数或 X-API-Key 请求头" autocomplete="off">
+      </div>
+      <p class="hint">端点（返回 JSON）：<code>/api.php?act=modpacks</code>（列表，可加 <code>category/version/loader/keyword/page/per_page</code>）、<code>act=modpack&amp;id=1</code>（详情）、<code>act=categories</code>（分类）、<code>act=tags</code>（标签）。伪静态形式：<code>/api/modpacks</code> 等。</p>
     </div>
     <div class="form-actions"><button class="btn" type="submit">保存设置</button></div>
   </form>

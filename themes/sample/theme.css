@@ -1,0 +1,18 @@
+/* 示例自定义主题 · theme.css
+   此文件追加在 style.css 之后加载，可直接覆盖全局变量与样式。
+   变量参考（style.css :root 中定义）：--bg --bg2 --panel --line --accent --accent2 --text --muted --danger
+*/
+:root {
+  --bg: #101020;
+  --bg2: #181832;
+  --panel: #1e1e3f;
+  --line: #35356b;
+  --accent: #ff6bd6;
+  --accent2: #ff9fe8;
+  --text: #f2eefe;
+  --muted: #a99fd0;
+  --danger: #ff6b6b;
+}
+
+/* 也可在此追加任意自定义样式 */
+.brand-name { letter-spacing: 2px; }

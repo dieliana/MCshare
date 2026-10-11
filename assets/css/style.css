@@ -44,6 +44,9 @@ body {
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
 .brand-icon { font-size: 26px; }
 .brand-name { font-size: 20px; font-weight: 800; color: var(--accent); letter-spacing: .5px; }
+.site-nav { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.nav-link { color: var(--muted); text-decoration: none; font-size: 14px; padding: 6px 12px; border-radius: 8px; transition: color .2s, background .2s; }
+.nav-link:hover { color: var(--accent); background: var(--bg2); }
 .search { display: flex; flex: 1; max-width: 460px; margin-left: auto; }
 .search input {
   flex: 1; padding: 9px 14px; border-radius: 20px 0 0 20px;
@@ -162,6 +165,7 @@ body {
 
 @media (max-width: 640px) {
   .header-inner { flex-wrap: wrap; }
+  .site-nav { order: 4; flex-basis: 100%; justify-content: flex-start; }
   .search { order: 3; max-width: 100%; flex-basis: 100%; }
   .hero h1 { font-size: 26px; }
   .filters { flex-direction: column; }

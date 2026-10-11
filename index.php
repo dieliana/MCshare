@@ -4,6 +4,8 @@
  */
 require __DIR__ . '/includes/db.php';
 require __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/plugins.php';
+load_plugins();
 
 ensure_session();
 maintenance_check();
@@ -260,5 +262,6 @@ if (($_GET['ajax'] ?? '') === '1') {
   });
 })();
 </script>
+<?php do_action('mc_body_end'); ?>
 </body>
 </html>

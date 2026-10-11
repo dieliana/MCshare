@@ -11,6 +11,7 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteRule ^includes/ - [F,L]
+  RewriteRule ^plugins/.*\.php$ - [F,L]
   RewriteRule ^schema\.sql$ - [F,L]
   RewriteRule ^config\.example\.php$ - [F,L]
 </IfModule>
@@ -34,5 +35,6 @@ DirectoryIndex index.php
   RewriteRule ^submit/?$ submit.php [L]
   RewriteRule ^my-modpacks/?$ my-modpacks.php [L]
   RewriteRule ^messages/?$ messages.php [L]
+  RewriteRule ^api/([a-z_]+)/?$ api.php?act=$1 [L,QSA]
   RewriteRule ^index\.php$ / [R=301,L]
 </IfModule>
