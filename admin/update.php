@@ -185,7 +185,7 @@ if (!$remote && !empty($_SESSION['update_remote'])) $remote = $_SESSION['update_
       <tbody>
         <tr><th style="width:150px">当前版本</th><td>
           <span class="pill green"><?= e($localVer) ?></span>
-          <?php if ($local): ?><span class="muted" style="font-size:12px">(commit <?= e(substr($local, -7)) ?>)</span><?php endif; ?>
+          <?php if (preg_match('/\b([0-9a-f]{7,40})\b/i', $local, $m)): ?><span class="muted" style="font-size:12px">(commit <?= e($m[1]) ?>)</span><?php endif; ?>
         </td></tr>
         <tr><th>远程最新版本</th><td>
           <?php if ($remote): ?>
