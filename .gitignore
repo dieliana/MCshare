@@ -1,3 +1,6 @@
 *.rar
 *.zip
 uploads/
+config.php
+cron_daily.log
+cron_update.log
