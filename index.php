@@ -210,7 +210,7 @@ if (($_GET['ajax'] ?? '') === '1') {
         <a href="<?= e(buildQuery(['tag' => $tg['name'], 'page' => 1])) ?>">#<?= e($tg['name']) ?></a>
       <?php endforeach; ?>
     </div>
-    <p class="foot-copy"><?= e(setting('footer_text', $siteName . ' · 我的世界整合包资源分享')) ?></p>
+    <p class="foot-copy"><?= setting('footer_text', $siteName . ' · 我的世界整合包资源分享') ?></p>
   </div>
 </footer>
 <?php endif; ?>

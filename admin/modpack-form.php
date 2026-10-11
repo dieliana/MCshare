@@ -261,7 +261,7 @@ $pageTitle = $edit ? '编辑整合包' : '新增整合包';
           <label class="file-btn"><i class="fa-solid fa-folder-open"></i> 选择封面图片<input type="file" name="cover" accept="image/jpeg,image/png,image/webp,image/gif" onchange="this.parentNode.nextElementSibling.textContent=this.files[0]?this.files[0].name:'"></label><span class="file-name"></span>
           <p class="hint">支持 jpg/png/webp/gif，≤ 8MB；也可从图库选用图片作为封面：</p>
           <div style="display:flex;gap:8px;margin-top:8px">
-            <input type="text" name="cover_url" id="cover_url" value="" placeholder="图库图片路径（如 gallery/xxx.png）">
+            <input type="text" name="cover_url" id="cover_url" value="<?= e(preg_match('#^https?://#i', $mp['cover']) ? $mp['cover'] : '') ?>" placeholder="图片链接（外链 URL）或图库路径（如 gallery/xxx.png）">
             <button type="button" class="btn ghost" onclick="openGallery('cover_url')">从图库选择</button>
           </div>
         </div>

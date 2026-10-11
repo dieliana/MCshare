@@ -107,7 +107,8 @@ $pageTitle = '站点设置';
       <input type="text" name="announcement" value="<?= e($vals['announcement']) ?>" placeholder="留空则不显示"></div>
 
     <div class="field"><label>页脚文字</label>
-      <input type="text" name="footer_text" value="<?= e($vals['footer_text']) ?>" placeholder="站点版权信息"></div>
+      <textarea name="footer_text" rows="3" style="width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:10px 12px;font-size:14px" placeholder="站点版权信息"><?= e($vals['footer_text']) ?></textarea>
+      <p class="mini-meta" style="font-size:12px;margin-top:6px">支持 HTML：可填写版权、备案号、友情链接等</p></div>
 
     <div class="field">
       <label>前台主题</label>

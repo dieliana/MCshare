@@ -75,6 +75,20 @@ if ($postedStep === 4) {
             ];
             foreach ($settings as $k => $v) $setSt->execute([$k, $v]);
 
+            // 3.1) 可选 SMTP 配置（勾选启用才写入）
+            if (!empty($siteAdm['smtp']['enable'])) {
+                $s = $siteAdm['smtp'];
+                foreach ([
+                    'smtp_host'     => $s['host'],
+                    'smtp_port'     => $s['port'],
+                    'smtp_user'     => $s['user'],
+                    'smtp_pass'     => $s['pass'],
+                    'smtp_from'     => $s['from'],
+                    'smtp_fromname' => $s['fromname'],
+                    'smtp_secure'   => $s['secure'],
+                ] as $k => $v) $setSt->execute([$k, $v]);
+            }
+
             // 4) 创建管理员
             $hash = password_hash($siteAdm['password'], PASSWORD_DEFAULT);
             $admSt = $pdo->prepare('INSERT INTO admins (username, password) VALUES (?, ?)');
@@ -133,12 +147,23 @@ elseif ($postedStep === 3) {
         $step = 3;
         $step3Errors = $errs;
     } else {
+        $smtp = [
+            'enable'   => isset($_POST['smtp_enable']),
+            'host'     => trim($_POST['smtp_host'] ?? ''),
+            'port'     => trim($_POST['smtp_port'] ?? '587'),
+            'user'     => trim($_POST['smtp_user'] ?? ''),
+            'pass'     => (string)($_POST['smtp_pass'] ?? ''),
+            'from'     => trim($_POST['smtp_from'] ?? ''),
+            'fromname' => trim($_POST['smtp_fromname'] ?? ''),
+            'secure'   => in_array($_POST['smtp_secure'] ?? '', ['none', 'ssl', 'tls'], true) ? $_POST['smtp_secure'] : 'tls',
+        ];
         $_SESSION['install_site'] = [
             'site_name'    => $site_name,
             'site_desc'    => $site_desc,
             'announcement' => $announcement,
             'username'     => $username,
             'password'     => $password,
+            'smtp'         => $smtp,
         ];
         $step = 4;
     }
@@ -338,6 +363,32 @@ $siteAdm = $_SESSION['install_site'] ?? null;
         <div><label>管理员密码</label><input type="password" name="password" placeholder="至少 6 位"></div>
         <div><label>确认密码</label><input type="password" name="password2" placeholder="再次输入"></div>
       </div>
+
+      <hr style="border:none;border-top:1px solid #23334e;margin:24px 0">
+      <h2 style="font-size:16px">SMTP 邮件配置（可选，可跳过）</h2>
+      <p class="meta">用于发送注册邮箱验证码、批量邮件、站内信邮件通知；跳过则安装后再到后台「站点设置」配置。</p>
+      <div class="check"><input type="checkbox" name="smtp_enable" id="smtp_enable" value="1" <?= isset($_POST['smtp_enable']) ? 'checked' : '' ?>><label for="smtp_enable" style="margin:0">启用 SMTP</label></div>
+      <div id="smtpBox" style="display:none">
+        <div class="row">
+          <div><label>SMTP 服务器</label><input type="text" name="smtp_host" value="<?= h($_POST['smtp_host'] ?? '') ?>" placeholder="如 smtp.qq.com / smtp.163.com"></div>
+          <div style="max-width:130px;"><label>端口</label><input type="number" name="smtp_port" value="<?= h($_POST['smtp_port'] ?? '587') ?>"></div>
+        </div>
+        <div class="row">
+          <div><label>邮箱账号</label><input type="text" name="smtp_user" value="<?= h($_POST['smtp_user'] ?? '') ?>" placeholder="your@qq.com"></div>
+          <div><label>密码 / 授权码</label><input type="password" name="smtp_pass" placeholder="QQ 邮箱用授权码"></div>
+        </div>
+        <div class="row">
+          <div><label>发件人地址</label><input type="text" name="smtp_from" value="<?= h($_POST['smtp_from'] ?? '') ?>" placeholder="留空默认用账号"></div>
+          <div><label>发件人名称</label><input type="text" name="smtp_fromname" value="<?= h($_POST['smtp_fromname'] ?? '') ?>" placeholder="站点名称"></div>
+        </div>
+        <label>加密方式</label>
+        <select name="smtp_secure" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #33456a;background:#121c2e;color:#eef3fb;font-size:14px">
+          <option value="tls">STARTTLS（端口 587）</option>
+          <option value="ssl">SSL（端口 465）</option>
+          <option value="none">无加密</option>
+        </select>
+      </div>
+
       <?php if (!empty($step3Errors)): ?>
         <div class="err"><?= h(implode('；', $step3Errors)) ?></div>
       <?php endif; ?>
@@ -346,6 +397,13 @@ $siteAdm = $_SESSION['install_site'] ?? null;
         <button class="btn" type="submit">下一步：确认安装 →</button>
       </div>
     </form>
+    <script>
+    (function () {
+      var cb = document.getElementById('smtp_enable'), box = document.getElementById('smtpBox');
+      function t() { if (cb) box.style.display = cb.checked ? 'block' : 'none'; }
+      if (cb) { cb.addEventListener('change', t); t(); }
+    })();
+    </script>
 
   <?php elseif ($step === 4): ?>
     <div class="stepbar"><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div></div>

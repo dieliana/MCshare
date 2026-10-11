@@ -384,7 +384,7 @@ if (!$modpack) {
 
 <footer class="site-footer">
   <div class="wrap">
-    <p class="foot-copy"><?= e(setting('footer_text', ($siteName ?? 'MC Modpack Hub') . ' · 我的世界整合包资源分享')) ?></p>
+    <p class="foot-copy"><?= setting('footer_text', ($siteName ?? 'MC Modpack Hub') . ' · 我的世界整合包资源分享') ?></p>
   </div>
 </footer>
 

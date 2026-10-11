@@ -256,7 +256,8 @@ include __DIR__ . '/includes/site_head.php';
               <p class="muted">暂无封面</p>
             <?php endif; ?>
             <label class="file-btn"><i class="fa-solid fa-folder-open"></i> 选择封面图片<input type="file" name="cover" accept="image/jpeg,image/png,image/webp,image/gif" onchange="this.parentNode.nextElementSibling.textContent=this.files[0]?this.files[0].name:''"></label><span class="file-name"></span>
-            <p class="hint">支持 jpg/png/webp/gif，≤ 8MB。</p>
+            <input type="text" name="cover_url" value="<?= e(preg_match('#^https?://#i', $mp['cover']) ? $mp['cover'] : '') ?>" placeholder="或直接粘贴图片链接（外链 URL）" style="width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:9px 12px;font-size:14px;margin-top:8px">
+            <p class="hint">支持 jpg/png/webp/gif，≤ 8MB；也可直接填写图片外链地址。</p>
           </div>
           <div class="field">
             <label>分类</label>
