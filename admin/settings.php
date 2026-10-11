@@ -48,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($vals['site_name'] === '') {
             $msg = ['err', '站点名称不能为空'];
         } else {
+            $didSave = true;
             foreach ($vals as $k => $v) $st->execute([$k, $v]);
 
             // Logo 上传（支持 jpg/png/webp/gif/svg/ico）
@@ -72,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $vals = [];
-foreach ($fields as $f) $vals[$f] = setting($f, '');
+foreach ($fields as $f) $vals[$f] = setting($f, '', !empty($didSave));
 if ($vals['auto_refresh'] === '') $vals['auto_refresh'] = '120';
 $vals['logo']    = setting('logo', '');
 $vals['favicon'] = setting('favicon', '');

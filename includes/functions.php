@@ -28,10 +28,10 @@ function site_url()
 }
 
 /** 读取站点设置 */
-function setting($key, $default = '')
+function setting($key, $default = '', $refresh = false)
 {
     static $cache = null;
-    if ($cache === null) {
+    if ($cache === null || $refresh) {
         $cache = [];
         try {
             $st = db()->query('SELECT skey, svalue FROM settings');
