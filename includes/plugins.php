@@ -8,6 +8,22 @@
  */
 require_once __DIR__ . '/hooks.php';
 
+/** 输出启用主题的 theme.css 与可选主题列表（前台 <head> 使用） */
+function mc_theme_assets()
+{
+    $theme = setting('theme', 'emerald');
+    $css = dirname(__DIR__) . '/themes/' . $theme . '/theme.css';
+    if (is_file($css)) {
+        echo '<link rel="stylesheet" href="/themes/' . rawurlencode($theme) . '/theme.css">' . PHP_EOL;
+    }
+    $all = ['emerald', 'ocean', 'violet', 'forest', 'light'];
+    foreach (glob(dirname(__DIR__) . '/themes/*/theme.css') ?: [] as $tf) {
+        $t = basename(dirname($tf));
+        if (!in_array($t, $all, true)) $all[] = $t;
+    }
+    echo '<script>window.MC_THEMES = ' . json_encode($all) . ';</script>' . PHP_EOL;
+}
+
 function load_plugins()
 {
     static $loaded = false;

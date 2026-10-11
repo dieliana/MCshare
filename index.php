@@ -133,6 +133,7 @@ if (($_GET['ajax'] ?? '') === '1') {
 <?php if ($favicon): ?><link rel="icon" href="<?= e(cover_url($favicon)) ?>"><?php endif; ?>
 <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
+<?php mc_theme_assets(); ?>
 <?php wp_head(); ?>
 </head>
 <body data-refresh="<?= (int)$autoRefresh ?>">

@@ -22,18 +22,7 @@ $pageTitle = $pageTitle ?? $siteName;
 <?php if ($favicon): ?><link rel="icon" href="<?= e(cover_url($favicon)) ?>"><?php endif; ?>
 <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
-<?php
-// 加载自定义主题的 theme.css（若当前主题为 themes/ 下的目录主题）
-$_themeCss = __DIR__ . '/../themes/' . $theme . '/theme.css';
-if (is_file($_themeCss)) echo '<link rel="stylesheet" href="/themes/' . rawurlencode($theme) . '/theme.css">';
-// 收集全部可用主题（内置 + themes/ 自定义），供前台切换按钮轮换
-$_allThemes = ['emerald', 'ocean', 'violet', 'forest', 'light'];
-foreach (glob(__DIR__ . '/../themes/*/theme.css') ?: [] as $_tf) {
-    $_t = basename(dirname($_tf));
-    if (!in_array($_t, $_allThemes, true)) $_allThemes[] = $_t;
-}
-echo '<script>window.MC_THEMES = ' . json_encode($_allThemes) . ';</script>';
-?>
+<?php mc_theme_assets(); ?>
 <?php wp_head(); ?>
 </head>
 <body>
