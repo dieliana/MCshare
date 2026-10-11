@@ -112,7 +112,7 @@ $pageTitle = '图库管理';
     <div class="gallery-grid">
       <?php foreach ($images as $im): ?>
         <div class="gallery-item">
-          <img src="<?= e(cover_url($im['path'])) ?>" alt="<?= e($im['name']) ?>" loading="lazy"
+          <img src="<?= e(thumb_url($im['path'])) ?>" alt="<?= e($im['name']) ?>" loading="lazy"
                <?= $pick ? 'style="cursor:pointer" onclick="pickImage(\'' . e(addslashes($im['path'])) . '\')"' : '' ?>>
           <div class="gallery-item-bar">
             <code title="相对路径"><?= e($im['path']) ?></code>

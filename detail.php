@@ -369,7 +369,7 @@ if (!$modpack) {
       <?php foreach ($related as $r): ?>
       <a class="card" href="/modpack/<?= e($r['slug']) ?>">
         <div class="thumb">
-          <?php if ($r['cover']): ?><img src="<?= e(cover_url($r['cover'])) ?>" alt="<?= e($r['title']) ?>" loading="lazy">
+          <?php if ($r['cover']): ?><img src="<?= e(thumb_url($r['cover'])) ?>" alt="<?= e($r['title']) ?>" loading="lazy">
           <?php else: ?><div class="thumb-ph"><i class="fa-solid fa-cube"></i></div><?php endif; ?>
         </div>
         <div class="card-body"><h3><?= e($r['title']) ?></h3><?php if ($r['tagline']): ?><p class="tagline"><?= e($r['tagline']) ?></p><?php endif; ?></div>

@@ -17,7 +17,7 @@
     <a class="card" href="/modpack/<?= e($m['slug']) ?>">
       <div class="thumb">
         <?php if ($m['cover']): ?>
-          <img src="<?= e(cover_url($m['cover'])) ?>" alt="<?= e($m['title']) ?>" loading="lazy">
+          <img src="<?= e(thumb_url($m['cover'])) ?>" alt="<?= e($m['title']) ?>" loading="lazy">
         <?php else: ?>
           <div class="thumb-ph"><i class="fa-solid fa-cube"></i></div>
         <?php endif; ?>

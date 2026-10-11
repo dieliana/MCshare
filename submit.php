@@ -250,7 +250,7 @@ include __DIR__ . '/includes/site_head.php';
           <div class="field">
             <label>封面图</label>
             <?php if ($mp['cover']): ?>
-              <div class="cover-preview"><img src="<?= e(cover_url($mp['cover'])) ?>" alt="当前封面"></div>
+              <div class="cover-preview"><img src="<?= e(thumb_url($mp['cover'])) ?>" alt="当前封面"></div>
               <label class="inline-check"><input type="checkbox" name="remove_cover" value="1"> 移除当前封面</label>
             <?php else: ?>
               <p class="muted">暂无封面</p>

@@ -106,6 +106,7 @@ function upload_image(array $file, string $subdir): ?string
         @mkdir($dir, 0755, true);
     }
     if (!move_uploaded_file($tmp, $dir . '/' . $name)) return null;
+    make_thumb($dir . '/' . $name); // 生成列表用缩略图（失败静默，不影响上传）
     return $sub . '/' . $name;
 }
 
@@ -185,6 +186,25 @@ function cover_url($cover)
     $cover = ltrim($cover, '/');
     if (preg_match('#^https?://#i', $cover)) return $cover;
     return site_url() . UPLOAD_URL . '/' . $cover;
+}
+
+/**
+ * 列表/卡片用缩略图 URL
+ * 若同目录存在 _thumb.webp / _thumb.jpg 则用缩略图，否则回退原图；外链不处理
+ */
+function thumb_url($cover)
+{
+    if (!$cover) return '';
+    $cover = ltrim($cover, '/');
+    if (preg_match('#^https?://#i', $cover)) return $cover;
+    $dir = dirname($cover);
+    $base = pathinfo($cover, PATHINFO_FILENAME);
+    foreach (['webp', 'jpg'] as $e) {
+        if (is_file(rtrim(UPLOAD_DIR, '/\\') . '/' . $dir . '/' . $base . '_thumb.' . $e)) {
+            return site_url() . UPLOAD_URL . '/' . $dir . '/' . $base . '_thumb.' . $e;
+        }
+    }
+    return cover_url($cover);
 }
 
 /** 解析作者社交链接（JSON 字符串 → 数组） */
