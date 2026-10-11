@@ -17,7 +17,7 @@ $verFile = __DIR__ . '/../VERSION';
 
 $remote = null;
 $local  = (file_exists($verFile) && ($_v = trim(file_get_contents($verFile)))) ? $_v : '';
-$appVersion = '1.3.6';
+$appVersion = '1.3.7';
 $githubToken = setting('github_token', '');
 function up_local_ver($local)
 {
@@ -153,7 +153,7 @@ $releases = (is_array($releases) && isset($releases[0])) ? $releases : null;
             <span class="muted" style="font-size:12px"><?= e(date('Y-m-d', strtotime($r['published_at'] ?? 'now'))) ?></span>
           </div>
           <?php if ($body !== ''): ?>
-            <div style="margin-top:6px;font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap"><?= e(mb_substr($body, 0, 500)) ?></div>
+            <div style="margin-top:6px;font-size:13px;color:var(--text);line-height:1.7;max-height:200px;overflow:auto"><?= mc_markdown($body) ?></div>
           <?php else: ?>
             <p class="muted" style="font-size:13px;margin-top:4px">（该版本无发布说明）</p>
           <?php endif; ?>

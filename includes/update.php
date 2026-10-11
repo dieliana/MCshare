@@ -135,3 +135,65 @@ if (!function_exists('mc_do_update')) {
         return ['ok' => $ok, 'copied' => $copied, 'skipped' => $skipped, 'msg' => $err];
     }
 }
+
+/** 轻量 Markdown 渲染（服务端，无第三方依赖；先转义再解析，安全） */
+if (!function_exists('mc_markdown')) {
+    function mc_markdown($text)
+    {
+        $text = htmlspecialchars((string)$text, ENT_QUOTES, 'UTF-8');
+        $lines = preg_split('/\r\n|\r|\n/', $text);
+        $html = ''; $code = false; $ul = false; $ol = false; $quote = false; $para = false;
+
+        $inline = function ($s) {
+            $s = preg_replace('/(\*\*|__)(.+?)\1/s', '<strong>$2</strong>', $s);
+            $s = preg_replace('/(?<!\*)\*([^*\n]+)\*(?!\*)/', '<em>$1</em>', $s);
+            $s = preg_replace('/`([^`]+)`/', '<code>$1</code>', $s);
+            $s = preg_replace('/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/', '<a href="$2" target="_blank" rel="noopener">$1</a>', $s);
+            return $s;
+        };
+        $closer = function (&$html, &$ul, &$ol, &$quote, &$para) {
+            if ($ul)    { $html .= "</ul>\n";        $ul = false; }
+            if ($ol)    { $html .= "</ol>\n";        $ol = false; }
+            if ($quote) { $html .= "</blockquote>\n"; $quote = false; }
+            if ($para)  { $html .= "</p>\n";         $para = false; }
+        };
+
+        foreach ($lines as $l) {
+            $t = trim($l);
+            if (preg_match('/^`{3,}/', $t)) { // 代码围栏
+                if ($code) { $html .= "</code></pre>\n"; $code = false; }
+                else { $closer($html, $ul, $ol, $quote, $para); $html .= "<pre><code>"; $code = true; }
+                continue;
+            }
+            if ($code) { $html .= $l . "\n"; continue; }
+            if ($t === '') { $closer($html, $ul, $ol, $quote, $para); continue; }
+
+            if (preg_match('/^(#{1,6})\s+(.+)$/', $t, $m)) { // 标题
+                $closer($html, $ul, $ol, $quote, $para);
+                $html .= '<h' . strlen($m[1]) . '>' . $inline($m[2]) . '</h' . strlen($m[1]) . ">\n";
+                continue;
+            }
+            if (preg_match('/^&gt;\s?(.*)$/', $t, $m)) { // 引用
+                if (!$quote) { $closer($html, $ul, $ol, $quote, $para); $html .= "<blockquote>\n"; $quote = true; }
+                $html .= $inline($m[1]) . "<br>\n";
+                continue;
+            }
+            if (preg_match('/^\s*[-*•]\s+(.+)$/', $t, $m)) { // 无序列表
+                if (!$ul) { $closer($html, $ul, $ol, $quote, $para); $html .= "<ul>\n"; $ul = true; }
+                $html .= '<li>' . $inline($m[1]) . "</li>\n";
+                continue;
+            }
+            if (preg_match('/^\s*\d+[.、)]\s+(.+)$/', $t, $m)) { // 有序列表
+                if (!$ol) { $closer($html, $ul, $ol, $quote, $para); $html .= "<ol>\n"; $ol = true; }
+                $html .= '<li>' . $inline($m[1]) . "</li>\n";
+                continue;
+            }
+            if (!$para) { $closer($html, $ul, $ol, $quote, $para); $html .= "<p>"; $para = true; }
+            else { $html .= "<br>\n"; }
+            $html .= $inline($t);
+        }
+        $closer($html, $ul, $ol, $quote, $para);
+        if ($code) $html .= "</code></pre>\n";
+        return $html;
+    }
+}
