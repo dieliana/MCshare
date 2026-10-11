@@ -34,6 +34,7 @@ foreach (glob(__DIR__ . '/../themes/*/theme.css') ?: [] as $_tf) {
 }
 echo '<script>window.MC_THEMES = ' . json_encode($_allThemes) . ';</script>';
 ?>
+<?php wp_head(); ?>
 </head>
 <body>
 <?php do_action('mc_body_top'); ?>

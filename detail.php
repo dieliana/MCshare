@@ -167,6 +167,7 @@ if (!$modpack) {
 <?php if ($favicon): ?><link rel="icon" href="<?= e(cover_url($favicon)) ?>"><?php endif; ?>
 <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
+<?php wp_head(); ?>
 </head>
 <body>
 <div class="bg-glow"></div>
@@ -289,7 +290,7 @@ if (!$modpack) {
     <?php if (trim($modpack['content'])): ?>
     <div class="detail-content">
       <h2>整合包介绍</h2>
-      <div class="content-body"><?= rich_html($modpack['content']) ?></div>
+      <div class="content-body"><?= rich_html(do_shortcode($modpack['content'])) ?></div>
       <?php do_action('mc_detail_after_content', $modpack); ?>
     </div>
     <?php endif; ?>
@@ -498,6 +499,7 @@ function doMute() {
     .then(function (d) { if (d.ok) { closeMute(); alert(d.msg || '已禁言'); } else alert(d.msg || '操作失败'); });
 }
 </script>
+<?php wp_footer(); ?>
 <?php do_action('mc_body_end'); ?>
 </body>
 </html>

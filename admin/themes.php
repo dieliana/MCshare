@@ -4,6 +4,7 @@
  * 支持上传自定义主题（zip，含 theme.php + 可选 theme.css）并启用/删除
  */
 require __DIR__ . '/_init.php';
+require_once __DIR__ . '/../includes/wp-compat/wp-compat.php'; // 用于识别 WordPress 主题
 
 $pageTitle = '主题管理';
 $msg = '';
@@ -67,19 +68,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $zip->extractTo($tmpExt);
                     $zip->close();
 
-                    // 定位含 theme.php 的主题目录
+                    // 定位主题目录：优先 MC 主题 theme.php，其次 WordPress 主题 style.css（含 Theme Name）
                     $found = null;
+                    $wpType = false;
                     $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($tmpExt, FilesystemIterator::SKIP_DOTS));
                     foreach ($it as $f) {
                         if ($f->isFile() && $f->getFilename() === 'theme.php') { $found = dirname($f->getPathname()); break; }
                     }
-                    if (!$found || !is_file($found . '/theme.php')) {
-                        $msg = ['err', 'zip 中未找到 theme.php（请按 themes/主题名/theme.php 结构打包）'];
+                    if (!$found) {
+                        foreach ($it as $f) {
+                            if ($f->isFile() && $f->getFilename() === 'style.css' && mc_wp_theme_info(dirname($f->getPathname()))) { $found = dirname($f->getPathname()); $wpType = true; break; }
+                        }
+                    }
+                    if (!$found) {
+                        $msg = ['err', 'zip 中未找到 theme.php（MC 主题）或含 Theme Name 的 style.css（WordPress 主题）'];
                     } else {
-                        $themeInfo = [];
-                        include $found . '/theme.php';
-                        $info = is_array($themeInfo ?? null) ? $themeInfo : [];
-                        $id = $info['id'] ?? basename($found);
+                        if ($wpType) {
+                            $wpInfo = mc_wp_theme_info($found);
+                            $info = $wpInfo;
+                            $id = basename($found);
+                        } else {
+                            $themeInfo = [];
+                            include $found . '/theme.php';
+                            $info = is_array($themeInfo ?? null) ? $themeInfo : [];
+                            $id = $info['id'] ?? basename($found);
+                        }
                         $id = preg_replace('/[^a-zA-Z0-9_-]/', '', $id);
                         if ($id === '' || isset($builtin[$id])) {
                             $msg = ['err', '主题 id 无效或与内置主题重名'];
@@ -96,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 if (!copy($rf->getPathname(), $target . '/' . $rel)) $ok = false;
                             }
                             if (!$ok) $msg = ['err', '复制主题文件失败'];
-                            else $msg = ['ok', '已上传主题：' . ($info['name'] ?? $id) . '（' . $id . '）'];
+                            else $msg = ['ok', '已上传' . ($wpType ? ' WordPress 主题' : '主题') . '：' . ($info['name'] ?? $id) . '（' . $id . '）'];
                         }
                     }
                     th_rmdir($tmpExt);
@@ -109,19 +122,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // 当前启用主题
 $active = setting('theme', 'emerald');
 
-// 自定义主题列表
+// 自定义主题列表（兼容：MCshare 主题 theme.php 与 WordPress 主题 style.css）
 $custom = [];
-foreach (glob($themesDir . '/*/theme.php') ?: [] as $tp) {
-    $themeInfo = [];
-    include $tp;
-    $info = is_array($themeInfo ?? null) ? $themeInfo : [];
-    $id = $info['id'] ?? basename(dirname($tp));
+foreach (glob($themesDir . '/*', GLOB_ONLYDIR) ?: [] as $td) {
+    $id = basename($td);
+    $info = null;
+    $wp = null;
+    if (is_file($td . '/theme.php')) {
+        $themeInfo = [];
+        include $td . '/theme.php';
+        $info = is_array($themeInfo ?? null) ? $themeInfo : [];
+        $id   = $info['id'] ?? $id;
+    } else {
+        $wp = mc_wp_theme_info($td);
+        if (!$wp) continue; // 既非 MC 主题也非 WP 主题
+        $info = $wp;
+        $id   = $info['id'] ?? $id;
+    }
     $custom[] = [
         'id'      => $id,
         'name'    => $info['name'] ?? $id,
         'version' => $info['version'] ?? '',
         'author'  => $info['author'] ?? '',
         'desc'    => $info['desc'] ?? '',
+        'wp'      => $wp !== null,
     ];
 }
 ?>
@@ -173,7 +197,7 @@ foreach (glob($themesDir . '/*/theme.php') ?: [] as $tp) {
           <tr>
             <td style="width:30px"><?= $active === $c['id'] ? '<i class="fa-solid fa-circle-check" style="color:var(--accent)"></i>' : '' ?></td>
             <td>
-              <b><?= e($c['name']) ?></b> <span class="muted">(<?= e($c['id']) ?>)</span>
+              <b><?= e($c['name']) ?></b> <span class="muted">(<?= e($c['id']) ?>)</span><?php if (!empty($c['wp'])): ?><span class="pill gray" style="margin-left:6px">WordPress</span><?php endif; ?>
               <?php if ($c['version']): ?><span class="pill gray">v<?= e($c['version']) ?></span><?php endif; ?>
               <?php if ($c['author']): ?><span class="muted" style="font-size:12px">by <?= e($c['author']) ?></span><?php endif; ?>
               <?php if ($c['desc']): ?><div class="muted" style="font-size:12px;margin-top:4px"><?= e($c['desc']) ?></div><?php endif; ?>

@@ -1,0 +1,15 @@
+/*
+Theme Name: WP 示例主题
+Theme URI:
+Author: 你
+Description: 演示 WordPress 主题在 MCshare 上的兼容：加载 functions.php、触发 wp_head、支持 enqueue 与短代码。
+Version: 1.0.0
+Tags: mc, wordpress, sample
+Text Domain: wp-sample
+*/
+
+/* 兼容层会加载本文件的 functions.php；页面主体仍由 MCshare 渲染 */
+:root {
+  --accent: #00c9ff;
+  --accent2: #92fe9d;
+}

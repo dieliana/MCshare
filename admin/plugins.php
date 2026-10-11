@@ -5,6 +5,7 @@
  */
 require __DIR__ . '/_init.php';
 require_once __DIR__ . '/../includes/hooks.php'; // 供插件元信息 include 时使用 add_action/add_filter
+require_once __DIR__ . '/../includes/wp-compat/wp-compat.php'; // 供识别/加载 WordPress 插件
 
 $pageTitle = '插件管理';
 $msg = '';
@@ -76,17 +77,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $zip->close();
 
                     $found = null;
+                    $wpType = false;
                     $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($tmpExt, FilesystemIterator::SKIP_DOTS));
                     foreach ($it as $f) {
                         if ($f->isFile() && $f->getFilename() === 'plugin.php') { $found = dirname($f->getPathname()); break; }
                     }
-                    if (!$found || !is_file($found . '/plugin.php')) {
-                        $msg = ['err', 'zip 中未找到 plugin.php（请按 plugins/插件id/plugin.php 结构打包）'];
+                    if (!$found) {
+                        $it2 = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($tmpExt, FilesystemIterator::SKIP_DOTS));
+                        foreach ($it2 as $f) {
+                            if ($f->isFile() && preg_match('/\.php$/i', $f->getFilename()) && mc_wp_plugin_info($f->getPathname())) { $found = dirname($f->getPathname()); $wpType = true; break; }
+                        }
+                    }
+                    if (!$found) {
+                        $msg = ['err', 'zip 中未找到 plugin.php（MC 插件）或含 Plugin Name 的 PHP 主文件（WordPress 插件）'];
                     } else {
-                        $pluginInfo = [];
-                        include $found . '/plugin.php';
-                        $info = is_array($pluginInfo ?? null) ? $pluginInfo : [];
-                        $id = $info['id'] ?? basename($found);
+                        if ($wpType) {
+                            $info = mc_wp_plugin_info($found . '/' . basename($found) . '.php') ?: mc_wp_plugin_info($found . '/index.php');
+                            $main = null;
+                            foreach (glob($found . '/*.php') ?: [] as $g) { if (mc_wp_plugin_info($g)) { $main = mc_wp_plugin_info($g); break; } }
+                            $info = $main ?: $info;
+                            $id = basename($found);
+                        } else {
+                            $pluginInfo = [];
+                            include $found . '/plugin.php';
+                            $info = is_array($pluginInfo ?? null) ? $pluginInfo : [];
+                            $id = $info['id'] ?? basename($found);
+                        }
                         $id = preg_replace('/[^a-zA-Z0-9_-]/', '', $id);
                         if ($id === '') {
                             $msg = ['err', '插件 id 无效'];
@@ -103,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 if (!copy($rf->getPathname(), $target . '/' . $rel)) $ok = false;
                             }
                             if (!$ok) $msg = ['err', '复制插件文件失败'];
-                            else $msg = ['ok', '已上传插件：' . ($info['name'] ?? $id) . '（' . $id . '），请启用后生效'];
+                            else $msg = ['ok', '已上传' . ($wpType ? ' WordPress 插件' : '插件') . '：' . ($info['name'] ?? $id) . '（' . $id . '），请启用后生效'];
                         }
                     }
                     pl_rmdir($tmpExt);
@@ -115,17 +131,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $active = pl_active();
 $plugins = [];
-foreach (glob($pluginsDir . '/*/plugin.php') ?: [] as $pp) {
-    $pluginInfo = [];
-    include $pp;
-    $info = is_array($pluginInfo ?? null) ? $pluginInfo : [];
-    $id = $info['id'] ?? basename(dirname($pp));
+foreach (glob($pluginsDir . '/*', GLOB_ONLYDIR) ?: [] as $pd) {
+    $id = basename($pd);
+    $info = null;
+    $wp = false;
+    if (is_file($pd . '/plugin.php')) {
+        $pluginInfo = [];
+        include $pd . '/plugin.php';
+        $info = is_array($pluginInfo ?? null) ? $pluginInfo : [];
+        $id   = $info['id'] ?? $id;
+    } else {
+        $main = mc_wp_find_main_file($pd);
+        if (!$main) continue; // 既非 MC 插件也非 WP 插件
+        $info = mc_wp_plugin_info($main);
+        $wp = true;
+        $id = basename($pd);
+    }
     $plugins[] = [
         'id'      => $id,
         'name'    => $info['name'] ?? $id,
         'version' => $info['version'] ?? '',
         'author'  => $info['author'] ?? '',
         'desc'    => $info['desc'] ?? '',
+        'wp'      => $wp,
         'active'  => in_array($id, $active, true),
     ];
 }
@@ -151,7 +179,7 @@ foreach (glob($pluginsDir . '/*/plugin.php') ?: [] as $pp) {
   <div class="panel">
     <h2>已安装插件</h2>
     <?php if (!$plugins): ?>
-      <p class="muted">暂无插件。可通过下方上传 zip，或手动放到 <code>plugins/插件id/</code>（含 plugin.php）。</p>
+      <p class="muted">暂无插件。可通过下方上传 zip，或手动放到 <code>plugins/插件id/</code>（MC 插件含 plugin.php；WordPress 插件含带 <code>Plugin Name:</code> 头的主文件）。</p>
     <?php else: ?>
       <table class="table">
         <thead><tr><th style="width:30px">状态</th><th>插件</th><th style="width:170px">操作</th></tr></thead>
@@ -160,7 +188,7 @@ foreach (glob($pluginsDir . '/*/plugin.php') ?: [] as $pp) {
           <tr>
             <td><?= $p['active'] ? '<span class="pill green">启用</span>' : '<span class="pill gray">禁用</span>' ?></td>
             <td>
-              <b><?= e($p['name']) ?></b> <span class="muted">(<?= e($p['id']) ?>)</span>
+              <b><?= e($p['name']) ?></b> <span class="muted">(<?= e($p['id']) ?>)</span><?php if (!empty($p['wp'])): ?><span class="pill gray" style="margin-left:6px">WordPress</span><?php endif; ?>
               <?php if ($p['version']): ?><span class="pill gray">v<?= e($p['version']) ?></span><?php endif; ?>
               <?php if ($p['author']): ?><span class="muted" style="font-size:12px">by <?= e($p['author']) ?></span><?php endif; ?>
               <?php if ($p['desc']): ?><div class="muted" style="font-size:12px;margin-top:4px"><?= e($p['desc']) ?></div><?php endif; ?>
