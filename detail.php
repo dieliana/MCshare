@@ -17,7 +17,7 @@ if ($slug === '') {
     exit;
 }
 
-$st = db()->prepare('SELECT m.*, c.name AS category_name FROM modpacks m LEFT JOIN categories c ON c.id = m.category_id WHERE m.slug = ? AND m.status = 1');
+$st = db()->prepare('SELECT m.*, c.name AS category_name, u.nickname AS author_nick, u.username AS author_username, u.avatar AS author_avatar, u.role AS author_role, u.is_super AS author_is_super FROM modpacks m LEFT JOIN categories c ON c.id = m.category_id LEFT JOIN users u ON u.id = m.user_id WHERE m.slug = ? AND m.status = 1');
 $st->execute([$slug]);
 $modpack = $st->fetch();
 
@@ -247,8 +247,22 @@ if (!$modpack) {
       <?php endif; ?>
 
       <?php if ($authorId > 0): ?>
-      <div class="author-follow">
-        <span class="author-follow-info"><i class="fa-solid fa-users"></i> 粉丝 <b id="fansCount"><?= $fans ?></b></span>
+      <div class="author-box">
+        <?php if ($modpack['author_avatar']): ?>
+          <img class="avatar" src="<?= e(cover_url($modpack['author_avatar'])) ?>" alt="发布者">
+        <?php else: ?>
+          <span class="avatar" style="display:inline-flex;align-items:center;justify-content:center;background:var(--bg2);font-size:16px"><i class="fa-solid fa-user"></i></span>
+        <?php endif; ?>
+        <div style="flex:1;min-width:0">
+          <div class="author-name"><?= e($modpack['author_nick'] ?: $modpack['author_username']) ?>
+            <?php if (($modpack['author_role'] ?? '') === 'admin'): ?>
+              <span class="role-badge"><?= (int)($modpack['author_is_super'] ?? 0) === 1 ? '超级管理员' : '管理员' ?></span>
+            <?php elseif (($modpack['author_role'] ?? '') === 'author'): ?>
+              <span class="role-badge">作者</span>
+            <?php endif; ?>
+          </div>
+          <div class="author-follow-info"><i class="fa-solid fa-users"></i> 粉丝 <b id="fansCount"><?= $fans ?></b></div>
+        </div>
         <?php if ($uId && $uId !== $authorId): ?>
           <a href="javascript:void(0)" class="follow-btn <?= $following ? 'active' : '' ?>" id="followBtn" onclick="toggleFollow(<?= $authorId ?>)">
             <i class="fa-solid <?= $following ? 'fa-user-check' : 'fa-user-plus' ?>"></i> <span id="followTxt"><?= $following ? '已关注' : '关注作者' ?></span>
