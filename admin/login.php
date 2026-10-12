@@ -23,9 +23,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($username === '' || $password === '') {
         $error = '请输入用户名和密码';
     } else {
-        // 超级管理员与前端账户同步：查 users 表中 role=admin 的账号，支持用户名或邮箱登录
-        $st = db()->prepare('SELECT id, username, email, password, role FROM users WHERE (username = ? OR email = ?) AND role = ? AND status = 1 LIMIT 1');
-        $st->execute([$username, $username, 'admin']);
+        // 超级管理员与前端账户同步：查 users 表中 role=admin 且 is_super=1 的账号，支持用户名或邮箱登录
+        $st = db()->prepare('SELECT id, username, email, password, role, is_super FROM users WHERE (username = ? OR email = ?) AND role = ? AND is_super = ? AND status = 1 LIMIT 1');
+        $st->execute([$username, $username, 'admin', 1]);
         $user = $st->fetch();
         if ($user && password_verify($password, $user['password'])) {
             session_regenerate_id(true);

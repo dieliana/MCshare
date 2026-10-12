@@ -10,11 +10,11 @@ require_once BASE_PATH . '/includes/auth.php';
 
 $admin = current_admin();
 if (!$admin) {
-    // 前台已登录：role=admin 的超级管理员自动放行
+    // 前台已登录：role=admin 且 is_super=1 的超级管理员自动放行
     if (!empty($_SESSION['user_id'])) {
         try {
-            $st = db()->prepare('SELECT id, username FROM users WHERE id = ? AND role = ? AND status = 1');
-            $st->execute([(int)$_SESSION['user_id'], 'admin']);
+            $st = db()->prepare('SELECT id, username FROM users WHERE id = ? AND role = ? AND is_super = ? AND status = 1');
+            $st->execute([(int)$_SESSION['user_id'], 'admin', 1]);
             $row = $st->fetch();
         } catch (Exception $e) {
             $row = null;
@@ -33,12 +33,12 @@ if (!$admin) {
                 $legacy = null;
             }
             if ($legacy) {
-                db()->prepare('UPDATE users SET role = ? WHERE id = ?')->execute(['admin', (int)$_SESSION['user_id']]);
+                db()->prepare('UPDATE users SET role = ?, is_super = ? WHERE id = ?')->execute(['admin', 1, (int)$_SESSION['user_id']]);
                 $_SESSION['admin_id'] = (int)$legacy['aid'];
                 $_SESSION['admin_name'] = $legacy['aname'];
                 $admin = current_admin();
             } else {
-                // 普通用户 / 非超级管理员：权限不足，返回用户中心
+                // 普通用户 / 普通管理员（非超级）：权限不足，返回用户中心
                 redirect('../profile?denied=1');
             }
         }

@@ -17,7 +17,7 @@ $verFile = __DIR__ . '/../VERSION';
 
 $remote = null;
 $local  = (file_exists($verFile) && ($_v = trim(file_get_contents($verFile)))) ? $_v : '';
-$appVersion = '1.3.9';
+$appVersion = '1.3.10';
 $githubToken = setting('github_token', '');
 function up_local_ver($local)
 {

@@ -147,7 +147,7 @@ include __DIR__ . '/includes/site_head.php';
 
     <div class="profile-topbar">
       <a class="btn" href="/"><i class="fa-solid fa-house"></i> 返回主页</a>
-      <?php if (is_admin($u)): ?>
+      <?php if (is_super_admin($u)): ?>
         <a class="btn" href="/admin/" style="margin-left:10px"><i class="fa-solid fa-crown"></i> 后台管理</a>
       <?php endif; ?>
       <span class="topbar-right">

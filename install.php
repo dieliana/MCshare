@@ -89,10 +89,10 @@ if ($postedStep === 4) {
                 ] as $k => $v) $setSt->execute([$k, $v]);
             }
 
-            // 4) 创建超级管理员（与前端账户同步：写入 users 表 role=admin，邮箱直接绑定）
+            // 4) 创建超级管理员（与前端账户同步：写入 users 表 role=admin + is_super=1，邮箱直接绑定）
             $hash = password_hash($siteAdm['password'], PASSWORD_DEFAULT);
-            $admSt = $pdo->prepare('INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)');
-            $admSt->execute([$siteAdm['username'], $siteAdm['email'] ?? '', $hash, 'admin']);
+            $admSt = $pdo->prepare('INSERT INTO users (username, email, password, role, is_super) VALUES (?, ?, ?, ?, ?)');
+            $admSt->execute([$siteAdm['username'], $siteAdm['email'] ?? '', $hash, 'admin', 1]);
             // 兼容旧后台登录体系：admins 表同步写入
             $admSt2 = $pdo->prepare('INSERT INTO admins (username, password) VALUES (?, ?)');
             $admSt2->execute([$siteAdm['username'], $hash]);

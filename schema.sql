@@ -85,8 +85,8 @@ CREATE TABLE IF NOT EXISTS settings (
 --  用户系统（用户 / 评论 / 点赞 / 收藏 / 站内信）
 -- ============================================================
 
--- role：user=普通用户 author=作者 admin=管理员（admin 拥有作者全部权利）
--- author_status：0=未申请 1=待审核 2=已通过 3=已拒绝
+-- role：user=普通用户 author=作者 admin=管理员（管理员拥有作者全部权利）
+-- is_super：1=超级管理员（可进后台），仅超级管理员可访问 /admin/
 CREATE TABLE IF NOT EXISTS users (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(50) NOT NULL UNIQUE,
@@ -95,6 +95,7 @@ CREATE TABLE IF NOT EXISTS users (
   nickname VARCHAR(50) NOT NULL DEFAULT '',
   avatar VARCHAR(255) NOT NULL DEFAULT '',
   role ENUM('user','author','admin') NOT NULL DEFAULT 'user',
+  is_super TINYINT(1) NOT NULL DEFAULT 0,
   status TINYINT(1) NOT NULL DEFAULT 1,
   author_status TINYINT(1) NOT NULL DEFAULT 0,
   author_reason VARCHAR(255) NOT NULL DEFAULT '',

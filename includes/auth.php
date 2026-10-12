@@ -20,10 +20,10 @@ function current_admin()
 {
     $id = $_SESSION['admin_id'] ?? null;
     if (!$id) return null;
-    // 新体系：前端 users 表 role=admin
+    // 新体系：前端 users 表 role=admin 且 is_super=1（超级管理员）
     try {
-        $st = db()->prepare('SELECT id, username, email, role FROM users WHERE id = ? AND role = ? AND status = 1');
-        $st->execute([(int)$id, 'admin']);
+        $st = db()->prepare('SELECT id, username, email, role, is_super FROM users WHERE id = ? AND role = ? AND is_super = ? AND status = 1');
+        $st->execute([(int)$id, 'admin', 1]);
         $r = $st->fetch();
         if ($r) return $r;
     } catch (Exception $e) {}

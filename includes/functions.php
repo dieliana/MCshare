@@ -356,6 +356,22 @@ function num($n)
 function ensure_session()
 {
     if (session_status() === PHP_SESSION_NONE) session_start();
+    // 会话启动时确保 users.is_super 列存在（兼容升级前旧库）
+    static $col = false;
+    if ($col === false) { mc_ensure_super_column(); $col = true; }
+}
+
+/** 确保 users 表存在 is_super 列（超级管理员标记），缺失则自动补列 */
+function mc_ensure_super_column()
+{
+    try {
+        $r = db()->query("SHOW COLUMNS FROM users LIKE 'is_super'");
+        if (!$r || $r->fetch() === false) {
+            db()->exec("ALTER TABLE users ADD COLUMN is_super TINYINT(1) NOT NULL DEFAULT 0 AFTER role");
+        }
+    } catch (Exception $e) {
+        // 忽略（无连接等场景），后续按需再补
+    }
 }
 
 /** 是否已登录（前台用户） */
@@ -645,11 +661,18 @@ function smtp_error(): string
 
 // ============ 角色与权限 ============
 
-/** 是否为管理员（可传 null 使用当前登录用户） */
+/** 是否为管理员（可传 null 使用当前登录用户）——普通管理员或超级管理员 */
 function is_admin($u = null)
 {
     if ($u === null) $u = current_user();
     return is_array($u) && ($u['role'] ?? 'user') === 'admin';
+}
+
+/** 是否为超级管理员（仅超级管理员可访问后台 /admin/） */
+function is_super_admin($u = null)
+{
+    if ($u === null) $u = current_user();
+    return is_array($u) && ($u['role'] ?? 'user') === 'admin' && (int)($u['is_super'] ?? 0) === 1;
 }
 
 /** 是否为作者（作者或管理员均视为作者） */
@@ -812,9 +835,9 @@ function mc_bind_superadmin($email)
     $st->execute([$email]);
     $u = $st->fetch();
     if (!$u) return ['err', '该邮箱没有对应前端用户，请先在前台注册后再绑定'];
-    if ($u['role'] === 'admin') return ['ok', '账号「' . $u['username'] . '」已是超级管理员'];
+    if ($u['role'] === 'admin' && (int)($u['is_super'] ?? 0) === 1) return ['ok', '账号「' . $u['username'] . '」已是超级管理员'];
 
-    db()->prepare('UPDATE users SET role = ? WHERE id = ?')->execute(['admin', (int)$u['id']]);
+    db()->prepare('UPDATE users SET role = ?, is_super = ? WHERE id = ?')->execute(['admin', 1, (int)$u['id']]);
 
     // 同步 admins 表（保持旧后台登录体系兼容）
     $a = db()->prepare('SELECT id FROM admins WHERE username = ?');
