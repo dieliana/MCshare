@@ -262,7 +262,8 @@ function rich_html($html)
         function ($m) use (&$savedIframes) {
             $tag = $m[0];
             if (preg_match('#\bsrc\s*=\s*(["\'])(.*?)\1#is', $tag, $s)) {
-                $src = trim($s[2]);
+                // 先反解码已转义实体，再统一转义一次：保存与展示幂等，避免双重转义 &amp;amp;
+                $src = trim(html_entity_decode($s[2], ENT_QUOTES, 'UTF-8'));
                 if (preg_match('#^(?:https?:)?//(?:player\.|www\.)?bilibili\.com/#i', $src)) {
                     $safe = '<iframe src="' . htmlspecialchars($src, ENT_QUOTES, 'UTF-8') . '" scrolling="no" frameborder="no" framespacing="0" allowfullscreen="true" loading="lazy"></iframe>';
                     $savedIframes[] = $safe;
