@@ -191,7 +191,7 @@ $pageTitle = $edit ? '编辑整合包' : '新增整合包';
 <title><?= e($pageTitle) ?> · 管理后台</title>
 <link rel="stylesheet" href="assets/admin.css">
     <link rel="stylesheet" href="../assets/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="../assets/css/editor.css?v=1.3.19">
+    <link rel="stylesheet" href="../assets/css/editor.css?v=1.3.21">
 </head>
 <body>
 <?php include __DIR__ . '/_nav.php'; ?>

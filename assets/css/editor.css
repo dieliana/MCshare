@@ -5,6 +5,7 @@
 .rte-toolbar button:hover { border-color: var(--accent); color: var(--accent); }
 .rte-area { min-height: 220px; padding: 12px 14px; outline: none; line-height: 1.7; color: var(--text); word-break: break-word; }
 .rte-area img { max-width: 100%; border-radius: 8px; }
+.rte-area iframe { display: block; width: 100%; aspect-ratio: 16 / 9; border: none; border-radius: 8px; margin: 10px 0; }
 .rte-area blockquote { border-left: 3px solid var(--accent); margin: 8px 0; padding: 6px 12px; background: var(--bg2); color: var(--muted); border-radius: 0 8px 8px 0; }
 .rte-area a { color: var(--accent); }
 .rte-area ul, .rte-area ol { padding-left: 22px; }
