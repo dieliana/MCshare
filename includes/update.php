@@ -50,8 +50,14 @@ if (!function_exists('mc_remote_latest')) {
         $apiBase = "https://api.github.com/repos/{$repo}";
         $c = mc_up_api($apiBase . '/commits?per_page=1', $token);
         if (!is_array($c) || empty($c[0]['sha'])) return null;
-        $tg = mc_up_api($apiBase . '/tags', $token);
-        $tag = (is_array($tg) && !empty($tg[0]['name'])) ? ltrim(trim($tg[0]['name']), 'v') : '';
+        $tg = mc_up_api($apiBase . '/tags?per_page=100', $token);
+        $tag = '';
+        if (is_array($tg) && !empty($tg)) {
+            // GitHub /tags 不保证语义版本序，取语义版本最大的 tag
+            $names = array_column($tg, 'name');
+            usort($names, function ($a, $b) { return version_compare(ltrim((string)$b, 'v'), ltrim((string)$a, 'v')); });
+            $tag = ltrim(trim((string)($names[0] ?? '')), 'v');
+        }
         return [
             'sha'   => $c[0]['sha'],
             'short' => substr($c[0]['sha'], 0, 7),
