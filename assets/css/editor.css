@@ -9,3 +9,12 @@
 .rte-area a { color: var(--accent); }
 .rte-area ul, .rte-area ol { padding-left: 22px; }
 .rte-area h3 { font-size: 17px; margin: 10px 0 6px; }
+/* 三模式（富文本 / Markdown / HTML）*/
+.rte-modebar { display: flex; gap: 4px; padding: 6px 8px; background: var(--bg2); border-bottom: 1px solid var(--line); }
+.rte-modebtn { background: var(--bg2); border: 1px solid var(--line); color: var(--muted); padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+.rte-modebtn:hover { border-color: var(--accent); color: var(--accent); }
+.rte-modebtn.active { background: var(--accent); border-color: var(--accent); color: var(--panel); font-weight: 600; }
+.rte-src { display: none; min-height: 220px; width: 100%; box-sizing: border-box; padding: 12px 14px; border: none; outline: none; background: var(--panel); color: var(--text); font-family: ui-monospace, Consolas, "Courier New", monospace; font-size: 13px; line-height: 1.6; resize: vertical; }
+.rte-area code, .rte-src code { background: var(--bg2); padding: 2px 5px; border-radius: 4px; font-family: ui-monospace, Consolas, "Courier New", monospace; font-size: 13px; }
+.rte-area pre { background: var(--bg2); padding: 10px 12px; border-radius: 8px; overflow-x: auto; }
+.rte-area pre code { background: transparent; padding: 0; }
