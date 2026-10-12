@@ -58,7 +58,7 @@ $ok = '';
 $pending = false;
 $mpId = 0;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_check($_POST['csrf'] ?? '')) {
     $mp['title']        = trim($_POST['title'] ?? '');
     $mp['tagline']      = trim($_POST['tagline'] ?? '');
     $mp['content']      = rich_html(trim($_POST['content'] ?? ''));
@@ -209,6 +209,7 @@ include __DIR__ . '/includes/site_head.php';
     <?php endif; ?>
 
     <form method="post" action="/submit<?= $edit ? '?edit=' . (int)$id : '' ?>" enctype="multipart/form-data" class="form">
+      <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
       <div class="form-grid">
         <div class="form-main">
           <div class="field">

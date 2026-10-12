@@ -81,7 +81,7 @@ if (!$modpack) {
 
     // 评论提交（含回复）
     $commentMsg = '';
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'comment') {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'comment' && csrf_check($_POST['csrf'] ?? '')) {
         if (!$u) {
             $commentMsg = '请先登录后再评论';
         } elseif (is_muted($u)) {
@@ -320,6 +320,7 @@ if (!$modpack) {
     <?php if ($u): ?>
       <form class="comment-form" method="post" action="/modpack/<?= e($modpack['slug']) ?>#comments">
         <input type="hidden" name="action" value="comment">
+        <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
         <input type="hidden" name="parent_id" id="replyParent" value="0">
         <div class="reply-hint" id="replyHint" style="display:none">回复给 <b id="replyName"></b> <a href="javascript:void(0)" onclick="closeReply()">取消</a></div>
         <textarea name="content" id="commentInput" placeholder="说点什么…（2-500 字）" required></textarea>

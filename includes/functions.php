@@ -157,7 +157,15 @@ function upload_icon(array $file, string $subdir): ?string
 
     if ($ext === 'svg') {
         $data = @file_get_contents($tmp);
-        if ($data !== false && stripos($data, '<svg') !== false && stripos($data, '<script') === false) {
+        if ($data !== false && stripos($data, '<svg') !== false) {
+            // 彻底移除脚本与危险内容，防 SVG XSS（仅查 <script 字面可被 <svg onload> 等绕过）
+            $data = preg_replace('/<\s*script\b[^>]*>.*?<\s*\/\s*script\s*>/is', '', $data);
+            $data = preg_replace('/<\s*script\b[^>]*\/?>/i', '', $data);
+            $data = preg_replace('/<\s*foreignObject\b[^>]*>.*?<\s*\/\s*foreignObject\s*>/is', '', $data);
+            $data = preg_replace('/\s+on[a-z]+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $data);
+            $data = preg_replace('/javascript\s*:/i', '', $data);
+            $data = preg_replace('/expression\s*:/i', '', $data);
+            @file_put_contents($tmp, $data);
             $ok = true;
         }
     } elseif ($ext === 'ico') {
@@ -849,6 +857,29 @@ function mc_bind_superadmin($email)
         db()->prepare('INSERT INTO admins (username, password) VALUES (?, ?)')->execute([$u['username'], $u['password']]);
     }
     return ['ok', '已将前端账号「' . $u['username'] . '」绑定为超级管理员，该账号登录后即可访问后台'];
+}
+
+/** 登录失败节流：连续 5 次失败锁定 10 分钟，防暴力破解 */
+function mc_login_blocked()
+{
+    if (empty($_SESSION['login_fail'])) return false;
+    $f = (int)$_SESSION['login_fail'];
+    $t = (int)($_SESSION['login_fail_time'] ?? 0);
+    if ($f >= 5) {
+        if (time() - $t > 600) { $_SESSION['login_fail'] = 0; return false; }
+        return true;
+    }
+    return false;
+}
+function mc_login_failed()
+{
+    $_SESSION['login_fail'] = (int)($_SESSION['login_fail'] ?? 0) + 1;
+    $_SESSION['login_fail_time'] = time();
+}
+function mc_login_reset()
+{
+    $_SESSION['login_fail'] = 0;
+    unset($_SESSION['login_fail_time']);
 }
 
 /** 输出社交分享标签（Open Graph + Twitter Card），供微信/QQ 等抓取生成分享卡片 */

@@ -44,10 +44,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 用户名 / 邮箱唯一性
         $chkU = db()->prepare('SELECT id FROM users WHERE username = ?');
         $chkU->execute([$username]);
-        if ($chkU->fetch()) $errors[] = '该用户名已被占用';
+        if ($chkU->fetch()) $errors[] = '用户名或邮箱不可用';
         $chkE = db()->prepare('SELECT id FROM users WHERE email = ?');
         $chkE->execute([$email]);
-        if ($chkE->fetch()) $errors[] = '该邮箱已被注册';
+        if ($chkE->fetch()) $errors[] = '用户名或邮箱不可用';
     }
 
     if (!$errors) {

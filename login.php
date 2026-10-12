@@ -22,15 +22,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = '算术验证码错误，请重新输入';
     } elseif ($account === '' || $password === '') {
         $errors[] = '请输入账号和密码';
+    } elseif (mc_login_blocked()) {
+        $errors[] = '尝试次数过多，请 10 分钟后再试';
     } else {
         $st = db()->prepare('SELECT * FROM users WHERE username = ? OR email = ? LIMIT 1');
         $st->execute([$account, $account]);
         $u = $st->fetch();
         if (!$u || !password_verify($password, $u['password'])) {
+            mc_login_failed();
             $errors[] = '账号或密码错误';
         } elseif ((int)$u['status'] !== 1) {
             $errors[] = '该账号已被禁止登录';
         } else {
+            mc_login_reset();
             session_regenerate_id(true);
             $_SESSION['user_id'] = (int)$u['id'];
             if (!empty($_POST['remember'])) {

@@ -15,6 +15,12 @@ if (!$u) redirect('/login');
 
 $msg = '';
 
+// 前台表单统一 CSRF 防护：token 校验失败则丢弃本次提交
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !csrf_check($_POST['csrf'] ?? '')) {
+    $msg = ['err', '会话已过期，请刷新页面重试'];
+    $_POST['action'] = '';
+}
+
 // 后台权限不足跳转提示
 if (isset($_GET['denied'])) {
     $msg = ['err', '权限不足：当前账号不是最高级管理员，无法访问后台管理页面。'];
@@ -197,12 +203,14 @@ include __DIR__ . '/includes/site_head.php';
         <div class="profile-card">
           <div class="section-title">资料设置</div>
           <form method="post" action="/profile" class="field">
+          <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
             <input type="hidden" name="action" value="nickname">
             <label>昵称</label>
             <input type="text" name="nickname" value="<?= e($u['nickname']) ?>" maxlength="20">
             <button class="btn" type="submit" style="margin-top:12px">保存昵称</button>
           </form>
           <form method="post" action="/profile" enctype="multipart/form-data" class="field" style="margin-top:20px">
+          <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
             <input type="hidden" name="action" value="avatar">
             <label>上传头像</label>
             <label class="file-btn"><i class="fa-solid fa-folder-open"></i> 选择图片<input type="file" name="avatar" accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml" onchange="this.parentNode.nextElementSibling.textContent=this.files[0]?this.files[0].name:''"></label>
@@ -221,6 +229,7 @@ include __DIR__ . '/includes/site_head.php';
             <?php else: ?>
               <p class="mini-meta" style="font-size:14px;color:var(--text)">申请成为作者后，即可发布整合包，并管理自己的整合包与评论。</p>
               <form method="post" action="/profile" class="field">
+              <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
                 <input type="hidden" name="action" value="apply_author">
                 <label>申请理由</label>
                 <textarea name="author_reason" placeholder="例如：我是 XX 整合包作者，想长期分享作品…（至少 5 个字）" required></textarea>
@@ -234,6 +243,7 @@ include __DIR__ . '/includes/site_head.php';
         <div class="profile-card">
           <div class="section-title">修改密码</div>
           <form method="post" action="/profile">
+          <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
             <input type="hidden" name="action" value="password">
             <div class="field"><label>原密码</label><input type="password" name="old_pass" required></div>
             <div class="field"><label>新密码</label><input type="password" name="new_pass" required></div>
@@ -300,6 +310,7 @@ include __DIR__ . '/includes/site_head.php';
                   <div class="mini-meta" style="font-size:12px"><?= e(fmt_date($a['created_at'])) ?><?= trim($a['reply']) ? ' · 处理回复：' . e($a['reply']) : '' ?></div>
                   <?php if ((int)$a['status'] === 0): ?>
                     <form method="post" action="/profile" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px">
+                    <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
                       <input type="hidden" name="action" value="appeal_handle">
                       <input type="hidden" name="aid" value="<?= (int)$a['id'] ?>">
                       <input type="text" name="reply" placeholder="驳回原因（可空）" style="flex:1;min-width:150px;background:var(--bg2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px 10px;font-size:14px">

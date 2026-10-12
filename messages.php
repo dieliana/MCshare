@@ -22,6 +22,15 @@ $u = current_user();
 if (!$u) { redirect('/login'); }
 $uid = (int)$u['id'];
 
+// 站内信 GET 操作需同源（防跨站删除/标读）
+if (($_GET['all'] ?? '') === 'read' || isset($_GET['read']) || isset($_GET['del'])) {
+    $refHost = $_SERVER['HTTP_HOST'] ?? '';
+    $ref = $_SERVER['HTTP_REFERER'] ?? '';
+    if ($refHost === '' || $ref === '' || stripos($ref, $refHost) === false) {
+        redirect('/messages');
+    }
+}
+
 // 全部标为已读
 if (($_GET['all'] ?? '') === 'read') {
     db()->prepare('UPDATE messages SET is_read = 1 WHERE user_id = ?')->execute([$uid]);

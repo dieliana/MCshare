@@ -10,6 +10,11 @@ if (!defined('BASE_PATH')) {
 
 $configFile = BASE_PATH . '/config.php';
 
+// 生产安全：关闭错误输出，避免泄露数据库用户/文件路径；错误写入日志
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+error_reporting(E_ALL);
+
 // 尚未安装 → 跳转安装向导
 if (!file_exists($configFile)) {
     header('Location: install.php');

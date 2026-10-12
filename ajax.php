@@ -36,7 +36,9 @@ switch ($act) {
             $st = db()->prepare('SELECT id FROM users WHERE email = ?');
             $st->execute([$email]);
             if ($st->fetch()) {
-                $out = ['ok' => false, 'msg' => '该邮箱已被注册'];
+                // 不区分邮箱是否已注册，防枚举：统一返回"已发送"，并计入节流
+                $_SESSION['email_code_sent'][$purpose] = time();
+                $out = ['ok' => true, 'msg' => '验证码已发送到你的邮箱（若该邮箱可注册请查收）'];
                 break;
             }
         }

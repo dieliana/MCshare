@@ -22,12 +22,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = '会话已过期，请刷新页面重试';
     } elseif ($username === '' || $password === '') {
         $error = '请输入用户名和密码';
+    } elseif (mc_login_blocked()) {
+        $error = '尝试次数过多，请 10 分钟后再试';
     } else {
         // 超级管理员与前端账户同步：查 users 表中 role=admin 且 is_super=1 的账号，支持用户名或邮箱登录
         $st = db()->prepare('SELECT id, username, email, password, role, is_super FROM users WHERE (username = ? OR email = ?) AND role = ? AND is_super = ? AND status = 1 LIMIT 1');
         $st->execute([$username, $username, 'admin', 1]);
         $user = $st->fetch();
         if ($user && password_verify($password, $user['password'])) {
+            mc_login_reset();
             session_regenerate_id(true);
             $_SESSION['admin_id']   = (int)$user['id'];
             $_SESSION['admin_name'] = $user['username'];
@@ -39,11 +42,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $st2->execute([$username]);
             $old = $st2->fetch();
             if ($old && password_verify($password, $old['password'])) {
+                mc_login_reset();
                 session_regenerate_id(true);
                 $_SESSION['admin_id']   = (int)$old['id'];
                 $_SESSION['admin_name'] = $old['username'];
                 redirect('index.php');
             } else {
+                mc_login_failed();
                 $error = '用户名 / 邮箱或密码错误';
             }
         }
