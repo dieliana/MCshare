@@ -23,15 +23,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($username === '' || $password === '') {
         $error = '请输入用户名和密码';
     } else {
-        $st = db()->prepare('SELECT id, username, password FROM admins WHERE username = ?');
-        $st->execute([$username]);
+        // 超级管理员与前端账户同步：查 users 表中 role=admin 的账号，支持用户名或邮箱登录
+        $st = db()->prepare('SELECT id, username, email, password, role FROM users WHERE (username = ? OR email = ?) AND role = ? AND status = 1 LIMIT 1');
+        $st->execute([$username, $username, 'admin']);
         $user = $st->fetch();
         if ($user && password_verify($password, $user['password'])) {
             session_regenerate_id(true);
-            $_SESSION['admin_id'] = (int)$user['id'];
+            $_SESSION['admin_id']   = (int)$user['id'];
+            $_SESSION['admin_name'] = $user['username'];
+            $_SESSION['user_id']    = (int)$user['id'];
             redirect('index.php');
         } else {
-            $error = '用户名或密码错误';
+            // 兼容旧体系：admins 表（旧超级管理员账号）
+            $st2 = db()->prepare('SELECT id, username, password FROM admins WHERE username = ?');
+            $st2->execute([$username]);
+            $old = $st2->fetch();
+            if ($old && password_verify($password, $old['password'])) {
+                session_regenerate_id(true);
+                $_SESSION['admin_id']   = (int)$old['id'];
+                $_SESSION['admin_name'] = $old['username'];
+                redirect('index.php');
+            } else {
+                $error = '用户名 / 邮箱或密码错误';
+            }
         }
     }
 }
@@ -52,8 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <?php if ($error): ?><div class="alert err"><?= e($error) ?></div><?php endif; ?>
   <form method="post" action="login.php">
     <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
-    <label>用户名</label>
-    <input type="text" name="username" autofocus required placeholder="请输入管理员用户名">
+    <label>用户名 / 邮箱</label>
+    <input type="text" name="username" autofocus required placeholder="前端超级管理员用户名或邮箱">
     <label>密码</label>
     <input type="password" name="password" required placeholder="请输入密码">
     <button class="btn block" type="submit">登 录</button>

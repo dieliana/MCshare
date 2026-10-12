@@ -89,10 +89,13 @@ if ($postedStep === 4) {
                 ] as $k => $v) $setSt->execute([$k, $v]);
             }
 
-            // 4) 创建管理员
+            // 4) 创建超级管理员（与前端账户同步：写入 users 表 role=admin，邮箱直接绑定）
             $hash = password_hash($siteAdm['password'], PASSWORD_DEFAULT);
-            $admSt = $pdo->prepare('INSERT INTO admins (username, password) VALUES (?, ?)');
-            $admSt->execute([$siteAdm['username'], $hash]);
+            $admSt = $pdo->prepare('INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)');
+            $admSt->execute([$siteAdm['username'], $siteAdm['email'] ?? '', $hash, 'admin']);
+            // 兼容旧后台登录体系：admins 表同步写入
+            $admSt2 = $pdo->prepare('INSERT INTO admins (username, password) VALUES (?, ?)');
+            $admSt2->execute([$siteAdm['username'], $hash]);
 
             // 5) 写入 config.php
             $cfg  = "<?php\n";
@@ -136,12 +139,14 @@ elseif ($postedStep === 3) {
     $site_desc    = trim($_POST['site_desc'] ?? '');
     $announcement = trim($_POST['announcement'] ?? '');
     $username     = trim($_POST['username'] ?? '');
+    $email        = trim($_POST['email'] ?? '');
     $password     = (string)($_POST['password'] ?? '');
     $password2    = (string)($_POST['password2'] ?? '');
 
     $errs = [];
     if ($site_name === '') $errs[] = '请填写站点名称';
     if ($username === '' || mb_strlen($username) < 3) $errs[] = '管理员用户名至少 3 个字符';
+    if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errs[] = '请填写有效的管理员邮箱（将直接绑定前端账号，无需验证码）';
     if (mb_strlen($password) < 6) $errs[] = '管理员密码至少 6 位';
     if ($password !== $password2) $errs[] = '两次输入的密码不一致';
 
@@ -164,6 +169,7 @@ elseif ($postedStep === 3) {
             'site_desc'    => $site_desc,
             'announcement' => $announcement,
             'username'     => $username,
+            'email'        => $email,
             'password'     => $password,
             'smtp'         => $smtp,
         ];
@@ -361,6 +367,8 @@ $siteAdm = $_SESSION['install_site'] ?? null;
       <input type="text" name="announcement" value="<?= h($_POST['announcement'] ?? ($siteAdm['announcement'] ?? '')) ?>" placeholder="欢迎语，展示在前台顶部">
       <label>管理员用户名</label>
       <input type="text" name="username" value="<?= h($_POST['username'] ?? ($siteAdm['username'] ?? 'admin')) ?>" placeholder="admin">
+      <label>管理员邮箱（用于与前端账号同步绑定，直接绑定无需验证码）</label>
+      <input type="email" name="email" value="<?= h($_POST['email'] ?? ($siteAdm['email'] ?? '')) ?>" placeholder="your@example.com">
       <div class="row">
         <div><label>管理员密码</label><input type="password" name="password" placeholder="至少 6 位"></div>
         <div><label>确认密码</label><input type="password" name="password2" placeholder="再次输入"></div>
@@ -424,7 +432,7 @@ $siteAdm = $_SESSION['install_site'] ?? null;
         数据库地址：<b><?= h($dbConf['host']) ?>:<?= h($dbConf['port']) ?></b><br>
         数据库名：<b><?= h($dbConf['name']) ?></b>（用户名：<b><?= h($dbConf['user']) ?></b>）<br>
         站点名称：<b><?= h($siteAdm['site_name']) ?></b><br>
-        管理员：<b><?= h($siteAdm['username']) ?></b>
+        管理员：<b><?= h($siteAdm['username']) ?></b>（邮箱 <b><?= h($siteAdm['email'] ?? '') ?></b>，与前端账号同步绑定，身份为超级管理员）
       </div>
       <form method="post" action="install.php">
         <input type="hidden" name="step" value="4">

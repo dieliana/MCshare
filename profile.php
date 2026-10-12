@@ -147,6 +147,9 @@ include __DIR__ . '/includes/site_head.php';
 
     <div class="profile-topbar">
       <a class="btn" href="/"><i class="fa-solid fa-house"></i> 返回主页</a>
+      <?php if (is_admin($u)): ?>
+        <a class="btn" href="/admin/" style="margin-left:10px"><i class="fa-solid fa-crown"></i> 后台管理</a>
+      <?php endif; ?>
       <span class="topbar-right">
         <a class="btn ghost" href="/submit"><i class="fa-solid fa-upload"></i> 发布整合包</a>
         <a class="btn ghost" href="/my-modpacks"><i class="fa-solid fa-list"></i> 我的发布</a>

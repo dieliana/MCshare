@@ -802,3 +802,27 @@ function maintenance_check()
     echo '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . ' · 维护中</title><style>body{background:#0e1524;color:#e8eef7;font-family:system-ui,-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}.box{text-align:center;max-width:420px;padding:30px 24px}.ic{font-size:54px;color:#3ddc84;margin-bottom:10px}h1{font-size:24px;margin:10px 0}.msg{color:#8ba0bd;line-height:1.8;word-break:break-word}.sub{color:#5f7391;font-size:12px;margin-top:14px}</style></head><body><div class="box"><div class="ic">&#9881;</div><h1>站点维护中</h1><p class="msg">' . htmlspecialchars($msg, ENT_QUOTES, 'UTF-8') . '</p><div class="sub">' . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . '</div></div></body></html>';
     exit;
 }
+
+/** 后台邮箱绑定：将前端同邮箱账号提升为超级管理员（users.role=admin），并同步 admins 表 */
+function mc_bind_superadmin($email)
+{
+    $email = trim((string)$email);
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return ['err', '邮箱格式不正确'];
+    $st = db()->prepare('SELECT id, username, password, role FROM users WHERE email = ? LIMIT 1');
+    $st->execute([$email]);
+    $u = $st->fetch();
+    if (!$u) return ['err', '该邮箱没有对应前端用户，请先在前台注册后再绑定'];
+    if ($u['role'] === 'admin') return ['ok', '账号「' . $u['username'] . '」已是超级管理员'];
+
+    db()->prepare('UPDATE users SET role = ? WHERE id = ?')->execute(['admin', (int)$u['id']]);
+
+    // 同步 admins 表（保持旧后台登录体系兼容）
+    $a = db()->prepare('SELECT id FROM admins WHERE username = ?');
+    $a->execute([$u['username']]);
+    if ($a->fetch()) {
+        db()->prepare('UPDATE admins SET password = ? WHERE username = ?')->execute([$u['password'], $u['username']]);
+    } else {
+        db()->prepare('INSERT INTO admins (username, password) VALUES (?, ?)')->execute([$u['username'], $u['password']]);
+    }
+    return ['ok', '已将前端账号「' . $u['username'] . '」绑定为超级管理员，该账号登录后即可访问后台'];
+}

@@ -15,15 +15,24 @@ function require_login()
     }
 }
 
-/** 获取当前登录管理员（返回数组或 null） */
+/** 获取当前登录管理员（返回数组或 null）——超级管理员即前端 users 表中 role=admin 的账号；兼容旧 admins 表 */
 function current_admin()
 {
-    if (empty($_SESSION['admin_id'])) return null;
+    $id = $_SESSION['admin_id'] ?? null;
+    if (!$id) return null;
+    // 新体系：前端 users 表 role=admin
     try {
-        $st = db()->prepare('SELECT id, username FROM admins WHERE id = ?');
-        $st->execute([$_SESSION['admin_id']]);
-        return $st->fetch();
-    } catch (Exception $e) {
-        return null;
-    }
+        $st = db()->prepare('SELECT id, username, email, role FROM users WHERE id = ? AND role = ? AND status = 1');
+        $st->execute([(int)$id, 'admin']);
+        $r = $st->fetch();
+        if ($r) return $r;
+    } catch (Exception $e) {}
+    // 旧体系：admins 表（admin_id 为 admins.id）
+    try {
+        $a = db()->prepare('SELECT id, username FROM admins WHERE id = ?');
+        $a->execute([(int)$id]);
+        $row = $a->fetch();
+        if ($row) return ['id' => (int)$row['id'], 'username' => $row['username'], 'email' => null, 'role' => 'admin'];
+    } catch (Exception $e) {}
+    return null;
 }

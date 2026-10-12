@@ -10,18 +10,37 @@ require_once BASE_PATH . '/includes/auth.php';
 
 $admin = current_admin();
 if (!$admin) {
-    // 前台已登录：用户名与后台 admins 表匹配的为最高级账号，自动放行
+    // 前台已登录：role=admin 的超级管理员自动放行
     if (!empty($_SESSION['user_id'])) {
-        $st = db()->prepare('SELECT a.id AS aid, a.username AS aname FROM users u INNER JOIN admins a ON a.username = u.username WHERE u.id = ?');
-        $st->execute([(int)$_SESSION['user_id']]);
-        $row = $st->fetch();
+        try {
+            $st = db()->prepare('SELECT id, username FROM users WHERE id = ? AND role = ? AND status = 1');
+            $st->execute([(int)$_SESSION['user_id'], 'admin']);
+            $row = $st->fetch();
+        } catch (Exception $e) {
+            $row = null;
+        }
         if ($row) {
-            $_SESSION['admin_id'] = (int)$row['aid'];
-            $_SESSION['admin_name'] = $row['aname'];
-            $admin = ['id' => (int)$row['aid'], 'username' => $row['aname']];
+            $_SESSION['admin_id'] = (int)$row['id'];
+            $_SESSION['admin_name'] = $row['username'];
+            $admin = current_admin();
         } else {
-            // 普通管理员 / 普通用户：权限不足，返回用户中心
-            redirect('../profile?denied=1');
+            // 平滑迁移：前端用户名与旧 admins 表匹配 → 自动提升为超级管理员并放行
+            try {
+                $st2 = db()->prepare('SELECT a.id AS aid, a.username AS aname FROM admins a INNER JOIN users u ON a.username = u.username WHERE u.id = ? LIMIT 1');
+                $st2->execute([(int)$_SESSION['user_id']]);
+                $legacy = $st2->fetch();
+            } catch (Exception $e) {
+                $legacy = null;
+            }
+            if ($legacy) {
+                db()->prepare('UPDATE users SET role = ? WHERE id = ?')->execute(['admin', (int)$_SESSION['user_id']]);
+                $_SESSION['admin_id'] = (int)$legacy['aid'];
+                $_SESSION['admin_name'] = $legacy['aname'];
+                $admin = current_admin();
+            } else {
+                // 普通用户 / 非超级管理员：权限不足，返回用户中心
+                redirect('../profile?denied=1');
+            }
         }
     } else {
         redirect('login.php');
