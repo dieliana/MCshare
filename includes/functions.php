@@ -245,7 +245,7 @@ function make_thumb($srcPath, $maxW = 480)
 function rich_html($html)
 {
     if ($html === null || $html === '') return '';
-    $allowed = '<p><br><b><strong><i><em><u><s><del><span><div><ul><ol><li><h1><h2><h3><h4><h5><blockquote><code><pre><table><thead><tbody><tr><td><th><hr><img><a>';
+    $allowed = '<p><br><b><strong><i><em><u><s><del><span><div><ul><ol><li><h1><h2><h3><h4><h5><blockquote><code><pre><table><thead><tbody><tr><td><th><hr><img><a><iframe>';
     $html = strip_tags($html, $allowed);
     // 剥离事件属性 onXxx
     $html = preg_replace('/\son[a-z]+\s*=\s*(["\'])[^"\']*\1/i', '', $html);
@@ -255,6 +255,31 @@ function rich_html($html)
     $html = preg_replace('/\b(?:expression|vbscript)\s*:/i', '', $html);
     // a 仅允许 http(s)/锚点/相对
     $html = preg_replace('/<a\s+href\s*=\s*["\'](?!https?:|\/|#|mailto:)[^"\']*["\']/i', '<a href="#', $html);
+    // iframe：仅放行 Bilibili 播放器（占位法：先替换为标记，清理残余，最后还原安全标签）
+    $savedIframes = [];
+    $html = preg_replace_callback(
+        '#<iframe\b[^>]*>.*?</iframe>#is',
+        function ($m) use (&$savedIframes) {
+            $tag = $m[0];
+            if (preg_match('#\bsrc\s*=\s*(["\'])(.*?)\1#is', $tag, $s)) {
+                $src = trim($s[2]);
+                if (preg_match('#^(?:https?:)?//(?:player\.|www\.)?bilibili\.com/#i', $src)) {
+                    $safe = '<iframe src="' . htmlspecialchars($src, ENT_QUOTES, 'UTF-8') . '" scrolling="no" frameborder="no" framespacing="0" allowfullscreen="true" loading="lazy"></iframe>';
+                    $savedIframes[] = $safe;
+                    return '%%MCIFRAME' . (count($savedIframes) - 1) . '%%';
+                }
+            }
+            return '';
+        },
+        $html
+    );
+    // 清理残余的孤立 iframe 开/闭标签
+    $html = preg_replace('#<iframe\b[^>]*>#i', '', $html);
+    $html = preg_replace('#</iframe>#i', '', $html);
+    // 还原安全 iframe
+    foreach ($savedIframes as $i => $iframe) {
+        $html = str_replace('%%MCIFRAME' . $i . '%%', $iframe, $html);
+    }
     return $html;
 }
 
