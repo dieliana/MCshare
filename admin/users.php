@@ -113,7 +113,7 @@ $pageTitle = '用户管理';
           </td>
           <td><?= e($u['email']) ?></td>
           <td>
-            <?php if ($u['role'] === 'admin'): ?><span class="pill green">管理员</span>
+            <?php if ($u['role'] === 'admin'): ?><span class="pill green"><?= (int)($u['is_super'] ?? 0) === 1 ? '超级管理员' : '管理员' ?></span>
             <?php elseif ($u['role'] === 'author'): ?><span class="pill blue">作者</span>
             <?php else: ?><span class="pill gray">用户</span><?php endif; ?>
           </td>

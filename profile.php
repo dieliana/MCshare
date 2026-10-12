@@ -167,7 +167,7 @@ include __DIR__ . '/includes/site_head.php';
         <div>
           <div class="profile-name"><?= e($u['nickname'] ?: $u['username']) ?></div>
           <div class="profile-sub">@<?= e($u['username']) ?> · <?= e($u['email']) ?> · 注册于 <?= e(fmt_date($u['created_at'])) ?>
-            <?php if (is_author($u)): ?><span class="role-badge"><?= is_admin($u) ? '管理员' : '作者' ?></span><?php endif; ?>
+            <?php if (is_author($u)): ?><span class="role-badge"><?= is_super_admin($u) ? '超级管理员' : (is_admin($u) ? '管理员' : '作者') ?></span><?php endif; ?>
           </div>
         </div>
       </div>
