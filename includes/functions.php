@@ -831,7 +831,8 @@ function mc_bind_superadmin($email)
 {
     $email = trim((string)$email);
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return ['err', '邮箱格式不正确'];
-    $st = db()->prepare('SELECT id, username, password, role FROM users WHERE email = ? LIMIT 1');
+    mc_ensure_super_column(); // 确保 is_super 列存在（兼容升级前旧库）
+    $st = db()->prepare('SELECT id, username, password, role, is_super FROM users WHERE email = ? LIMIT 1');
     $st->execute([$email]);
     $u = $st->fetch();
     if (!$u) return ['err', '该邮箱没有对应前端用户，请先在前台注册后再绑定'];

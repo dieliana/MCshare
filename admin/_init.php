@@ -8,6 +8,9 @@ require_once BASE_PATH . '/includes/db.php';
 require_once BASE_PATH . '/includes/functions.php';
 require_once BASE_PATH . '/includes/auth.php';
 
+// 确保 users.is_super 列存在（兼容升级前旧库）
+mc_ensure_super_column();
+
 $admin = current_admin();
 if (!$admin) {
     // 前台已登录：role=admin 且 is_super=1 的超级管理员自动放行
