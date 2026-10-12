@@ -221,7 +221,22 @@ include __DIR__ . '/includes/site_head.php';
           </div>
           <div class="field">
             <label>详细介绍</label>
-            <textarea name="content" rows="10" placeholder="整合包玩法、特色、注意事项…支持换行"><?= e($mp['content']) ?></textarea>
+            <div class="rte" data-input="desc-editor">
+              <div class="rte-toolbar">
+                <button type="button" data-cmd="bold" title="加粗"><i class="fa-solid fa-bold"></i></button>
+                <button type="button" data-cmd="italic" title="斜体"><i class="fa-solid fa-italic"></i></button>
+                <button type="button" data-cmd="underline" title="下划线"><i class="fa-solid fa-underline"></i></button>
+                <button type="button" data-cmd="formatBlock" data-val="h3" title="小标题">H</button>
+                <button type="button" data-cmd="insertUnorderedList" title="无序列表"><i class="fa-solid fa-list-ul"></i></button>
+                <button type="button" data-cmd="insertOrderedList" title="有序列表"><i class="fa-solid fa-list-ol"></i></button>
+                <button type="button" data-cmd="formatBlock" data-val="blockquote" title="引用"><i class="fa-solid fa-quote-left"></i></button>
+                <button type="button" data-cmd="createLink" title="插入链接"><i class="fa-solid fa-link"></i></button>
+                <button type="button" data-cmd="insertImage" title="插入图片"><i class="fa-solid fa-image"></i></button>
+                <button type="button" data-cmd="removeFormat" title="清除格式"><i class="fa-solid fa-eraser"></i></button>
+              </div>
+              <div class="rte-area" contenteditable="true"></div>
+            </div>
+            <textarea id="desc-editor" name="content" style="display:none"><?= e($mp['content']) ?></textarea>
           </div>
           <div class="field">
             <label>内容类型</label>
@@ -329,5 +344,6 @@ function addDlRow() {
 }
 </script>
 <script src="/assets/js/app.js"></script>
+<script src="/assets/js/editor.js"></script>
 </body>
 </html>
