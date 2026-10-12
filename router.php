@@ -30,7 +30,7 @@ $direct = [
 ];
 
 if (isset($direct[$path])) {
-    require __DIR__ . $direct[$path];
+    require __DIR__ . '/' . $direct[$path];
     return true;
 }
 

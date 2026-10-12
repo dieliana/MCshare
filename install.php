@@ -19,8 +19,10 @@ $configFile = $base . '/config.php';
 
 function h($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 
-// ---------- 已安装拦截（存在 install.lock 即视为已安装） ----------
-if (file_exists($lock)) {
+// ---------- 已安装拦截（存在 install.lock 或 config.php 即视为已安装） ----------
+$hasLock   = file_exists($lock);
+$hasConfig = file_exists($configFile);
+if ($hasLock || $hasConfig) {
     $step = 99; // 已安装
 } else {
     $step = isset($_GET['step']) ? (int)$_GET['step'] : 1;
@@ -304,7 +306,7 @@ $siteAdm = $_SESSION['install_site'] ?? null;
 
   <?php if ($step === 99): ?>
     <h2>已安装</h2>
-    <div class="ok">站点已安装完成。如需重新安装，请删除站点根目录下的 <b>install.lock</b> 文件后重试。</div>
+    <div class="ok">站点已安装完成。如需重新安装，请删除站点根目录下的 <b>install.lock</b> 与 <b>config.php</b> 文件后重试。</div>
     <a class="btn" href="index.php">进入前台首页</a>
     <a class="btn ghost" href="admin/login.php">进入管理后台</a>
 
