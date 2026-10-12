@@ -850,3 +850,26 @@ function mc_bind_superadmin($email)
     }
     return ['ok', '已将前端账号「' . $u['username'] . '」绑定为超级管理员，该账号登录后即可访问后台'];
 }
+
+/** 输出社交分享标签（Open Graph + Twitter Card），供微信/QQ 等抓取生成分享卡片 */
+function mc_og_meta($title = '', $desc = '', $image = '', $url = '')
+{
+    $siteName = setting('site_name', defined('SITE_NAME') ? SITE_NAME : 'MC Modpack Hub');
+    $siteDesc = setting('site_desc', '');
+    $t = $title !== '' ? $title : $siteName;
+    $d = $desc !== '' ? $desc : ($siteDesc !== '' ? $siteDesc : $siteName);
+    if (mb_strlen($d) > 200) $d = mb_substr($d, 0, 200) . '…';
+    $img = $image !== '' ? cover_url($image) : cover_url(setting('logo', ''));
+    $u = $url !== '' ? $url : site_url() . ltrim($_SERVER['REQUEST_URI'] ?? '/', '/');
+    echo "\n";
+    echo '  <meta property="og:site_name" content="' . e($siteName) . '">' . "\n";
+    echo '  <meta property="og:type" content="website">' . "\n";
+    echo '  <meta property="og:title" content="' . e($t) . '">' . "\n";
+    echo '  <meta property="og:description" content="' . e($d) . '">' . "\n";
+    echo '  <meta property="og:url" content="' . e($u) . '">' . "\n";
+    if ($img) echo '  <meta property="og:image" content="' . e($img) . '">' . "\n";
+    echo '  <meta name="twitter:card" content="summary_large_image">' . "\n";
+    echo '  <meta name="twitter:title" content="' . e($t) . '">' . "\n";
+    echo '  <meta name="twitter:description" content="' . e($d) . '">' . "\n";
+    if ($img) echo '  <meta name="twitter:image" content="' . e($img) . '">' . "\n";
+}

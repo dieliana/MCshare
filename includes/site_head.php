@@ -25,6 +25,7 @@ $pageTitle = $pageTitle ?? $siteName;
     <link rel="stylesheet" href="/assets/css/editor.css">
 <?php mc_theme_assets(); ?>
 <?php wp_head(); ?>
+<?php mc_og_meta(); ?>
 </head>
 <body>
 <?php do_action('mc_body_top'); ?>

@@ -135,6 +135,7 @@ if (($_GET['ajax'] ?? '') === '1') {
     <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
 <?php mc_theme_assets(); ?>
 <?php wp_head(); ?>
+<?php mc_og_meta(); ?>
 </head>
 <body data-refresh="<?= (int)$autoRefresh ?>">
 <div class="bg-glow"></div>

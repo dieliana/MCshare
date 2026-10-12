@@ -169,6 +169,7 @@ if (!$modpack) {
     <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
 <?php mc_theme_assets(); ?>
 <?php wp_head(); ?>
+<?php mc_og_meta($modpack['title'] ?? '', $modpack['tagline'] ?? '', $modpack['cover'] ?? ''); ?>
 </head>
 <body>
 <div class="bg-glow"></div>
