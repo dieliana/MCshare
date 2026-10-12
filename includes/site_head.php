@@ -22,7 +22,7 @@ $pageTitle = $pageTitle ?? $siteName;
 <?php if ($favicon): ?><link rel="icon" href="<?= e(cover_url($favicon)) ?>"><?php endif; ?>
 <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="/assets/css/editor.css">
+    <link rel="stylesheet" href="/assets/css/editor.css?v=1.3.19">
 <?php mc_theme_assets(); ?>
 <?php wp_head(); ?>
 <?php mc_og_meta(); ?>

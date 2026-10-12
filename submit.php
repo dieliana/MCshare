@@ -345,6 +345,6 @@ function addDlRow() {
 }
 </script>
 <script src="/assets/js/app.js"></script>
-<script src="/assets/js/editor.js"></script>
+<script src="/assets/js/editor.js?v=1.3.19"></script>
 </body>
 </html>
