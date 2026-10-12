@@ -20,9 +20,9 @@ $pageTitle = $pageTitle ?? $siteName;
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= e($pageTitle) ?> · <?= e($siteName) ?></title>
 <?php if ($favicon): ?><link rel="icon" href="<?= e(cover_url($favicon)) ?>"><?php endif; ?>
-<link rel="stylesheet" href="/assets/css/style.css?v=1.3.21">
-    <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="/assets/css/editor.css?v=1.3.21">
+<link rel="stylesheet" href="/assets/css/style.css?v=<?= e(mc_asset_ver()) ?>">
+    <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css?v=<?= e(mc_asset_ver()) ?>">
+    <link rel="stylesheet" href="/assets/css/editor.css?v=<?= e(mc_asset_ver()) ?>">
 <?php mc_theme_assets(); ?>
 <?php wp_head(); ?>
 <?php mc_og_meta(); ?>

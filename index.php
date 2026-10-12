@@ -131,8 +131,8 @@ if (($_GET['ajax'] ?? '') === '1') {
 <title><?= e($siteName) ?></title>
 <meta name="description" content="<?= e($siteDesc) ?>">
 <?php if ($favicon): ?><link rel="icon" href="<?= e(cover_url($favicon)) ?>"><?php endif; ?>
-<link rel="stylesheet" href="/assets/css/style.css">
-    <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
+<link rel="stylesheet" href="/assets/css/style.css?v=<?= e(mc_asset_ver()) ?>">
+    <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css?v=<?= e(mc_asset_ver()) ?>">
 <?php mc_theme_assets(); ?>
 <?php wp_head(); ?>
 <?php mc_og_meta(); ?>
@@ -221,7 +221,7 @@ if (($_GET['ajax'] ?? '') === '1') {
 </footer>
 <?php endif; ?>
 
-<script src="/assets/js/app.js"></script>
+<script src="/assets/js/app.js?v=<?= e(mc_asset_ver()) ?>"></script>
 <script>
 // 列表无刷新加载：筛选 / 搜索 / 排序 / 分页不再整页跳闪
 (function () {

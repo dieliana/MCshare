@@ -344,7 +344,7 @@ function addDlRow() {
   box.appendChild(row);
 }
 </script>
-<script src="/assets/js/app.js"></script>
-<script src="/assets/js/editor.js?v=1.3.19"></script>
+<script src="/assets/js/app.js?v=<?= e(mc_asset_ver()) ?>"></script>
+<script src="/assets/js/editor.js?v=<?= e(mc_asset_ver()) ?>"></script>
 </body>
 </html>

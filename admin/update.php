@@ -17,7 +17,7 @@ $verFile = __DIR__ . '/../VERSION';
 
 $remote = null;
 $local  = (file_exists($verFile) && ($_v = trim(file_get_contents($verFile)))) ? $_v : '';
-$appVersion = '1.3.22';
+$appVersion = '1.3.23';
 $githubToken = setting('github_token', '');
 function up_local_ver($local)
 {
@@ -87,7 +87,7 @@ $releases = (is_array($releases) && isset($releases[0])) ? $releases : null;
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= e($pageTitle) ?> · 管理后台</title>
-<link rel="stylesheet" href="assets/admin.css">
+<link rel="stylesheet" href="assets/admin.css?v=<?= e(mc_asset_ver()) ?>">
 <link rel="stylesheet" href="../assets/fontawesome/css/all.min.css">
 </head>
 <body>

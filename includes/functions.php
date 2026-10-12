@@ -242,6 +242,18 @@ function make_thumb($srcPath, $maxW = 480)
  * 富文本净化：允许常见排版标签，剥离脚本/事件属性/危险协议
  * 用于整合包详细介绍等用户提交内容的安全展示
  */
+if (!function_exists('mc_asset_ver')) {
+    /** 全局资源版本号：读根目录 VERSION，发版后自动变化，浏览器无需强刷 */
+    function mc_asset_ver($short = false) {
+        static $v = null;
+        if ($v === null) {
+            $vf = dirname(__DIR__) . '/VERSION';
+            $v = is_file($vf) ? preg_replace('/\s.*/', '', (string)@file_get_contents($vf)) : '1.0.0';
+            if ($v === '') $v = '1.0.0';
+        }
+        return $short ? ltrim($v, 'v') : $v;
+    }
+}
 function rich_html($html)
 {
     if ($html === null || $html === '') return '';

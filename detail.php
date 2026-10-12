@@ -165,8 +165,8 @@ if (!$modpack) {
 <title><?= $notFound ? '未找到' : e($modpack['title']) ?> · <?= e($siteName ?? 'MC Modpack Hub') ?></title>
 <meta name="description" content="<?= $notFound ? '' : e($modpack['tagline']) ?>">
 <?php if ($favicon): ?><link rel="icon" href="<?= e(cover_url($favicon)) ?>"><?php endif; ?>
-<link rel="stylesheet" href="/assets/css/style.css">
-    <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
+<link rel="stylesheet" href="/assets/css/style.css?v=<?= e(mc_asset_ver()) ?>">
+    <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css?v=<?= e(mc_asset_ver()) ?>">
 <?php mc_theme_assets(); ?>
 <?php wp_head(); ?>
 <?php mc_og_meta($modpack['title'] ?? '', $modpack['tagline'] ?? '', $modpack['cover'] ?? ''); ?>
@@ -430,7 +430,7 @@ if (!$modpack) {
   </div>
 </div>
 
-<script src="/assets/js/app.js"></script>
+<script src="/assets/js/app.js?v=<?= e(mc_asset_ver()) ?>"></script>
 <script>
 function toggleLike(id) {
   fetch('/ajax.php?act=like', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'modpack_id=' + id })
