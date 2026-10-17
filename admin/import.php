@@ -112,11 +112,73 @@ function imp_scan_bbsmc($url, $html)
         if (preg_match('#class="description"[^>]*>([\s\S]*?)</div>#i', $block, $m4)) {
             $desc = trim(preg_replace('/\s+/', ' ', trim(strip_tags($m4[1]))));
         }
+        $author = '';
+        if (preg_match('#href="(/user/[^"]+)"#i', $block, $m5)) {
+            $author = html_entity_decode(urldecode(basename($m5[1])), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        }
         $title = html_entity_decode($title, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $desc  = html_entity_decode($desc, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        $cards[] = ['title' => $title, 'href' => $href, 'cover' => $cover, 'text' => $desc];
+        $cards[] = ['title' => $title, 'href' => $href, 'cover' => $cover, 'text' => $desc, 'author' => $author];
     }
     return $cards;
+}
+
+/** 加载器名标准化：forge → Forge、fabric → Fabric … */
+function imp_loader($loaders)
+{
+    if (empty($loaders) || !is_array($loaders)) return '';
+    $l = strtolower(trim((string)$loaders[0]));
+    $map = [
+        'forge' => 'Forge', 'fabric' => 'Fabric', 'neoforge' => 'NeoForge', 'quilt' => 'Quilt',
+        'vanilla' => 'Vanilla', 'bukkit' => 'Bukkit', 'paper' => 'Paper', 'spigot' => 'Spigot',
+        'purpur' => 'Purpur', 'folia' => 'Folia', 'rift' => 'Rift', 'liteloader' => 'LiteLoader',
+    ];
+    return $map[$l] ?? ucfirst($l);
+}
+
+/** BBSMC 详情（API）：项目 + 版本，返回完整导入字段 */
+function imp_bbsmc_api($slug)
+{
+    $api  = 'https://api.bbsmc.net/v2/';
+    $slug = rawurlencode($slug);
+    $out  = ['title' => '', 'desc' => '', 'body' => '', 'cover' => '', 'loaders' => [], 'game_versions' => [], 'categories' => [], 'download' => '', 'downloads_list' => []];
+
+    $h = imp_fetch($api . 'project/' . $slug);
+    if ($h && ($p = json_decode($h, true)) && is_array($p)) {
+        $out['title']         = (string)($p['title'] ?? '');
+        $out['desc']          = (string)($p['description'] ?? '');
+        $out['body']          = (string)($p['body'] ?? '');
+        $out['cover']         = (string)($p['icon_url'] ?? '');
+        $out['loaders']       = is_array($p['loaders'] ?? null) ? $p['loaders'] : [];
+        $out['game_versions'] = is_array($p['game_versions'] ?? null) ? $p['game_versions'] : [];
+        $out['categories']    = array_merge(
+            is_array($p['categories'] ?? null) ? $p['categories'] : [],
+            is_array($p['additional_categories'] ?? null) ? $p['additional_categories'] : []
+        );
+    }
+
+    $v = imp_fetch($api . 'project/' . $slug . '/version?featured=true');
+    if ($v && ($arr = json_decode($v, true)) && is_array($arr)) {
+        $seenUrl = [];
+        foreach ($arr as $ver) {
+            if (!is_array($ver)) continue;
+            $url = '';
+            if (!empty($ver['files']) && is_array($ver['files'])) {
+                foreach ($ver['files'] as $f) { if (!empty($f['url'])) { $url = $f['url']; break; } }
+            }
+            if ($url === '' && !empty($ver['disk_urls']) && is_array($ver['disk_urls'])) {
+                foreach ($ver['disk_urls'] as $d) { if (!empty($d['url'])) { $url = $d['url']; break; } }
+            }
+            if ($url === '') continue;
+            $key = md5($url);
+            if (isset($seenUrl[$key])) continue;
+            $seenUrl[$key] = 1;
+            $label = ($ver['version_number'] ?? '') !== '' ? $ver['version_number'] : ($ver['name'] ?? '下载');
+            $out['downloads_list'][] = ['label' => (string)$label, 'url' => $url];
+        }
+        if ($out['downloads_list']) $out['download'] = $out['downloads_list'][0]['url'];
+    }
+    return $out;
 }
 
 function imp_scan($url, $html = null)
@@ -244,6 +306,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $cat = (int)$scan['category'];
             $domain = parse_url($scan['url'], PHP_URL_HOST) ?: '';
+            $isBbsmc = stripos($domain, 'bbsmc') !== false;
             $ok = 0; $fail = 0;
             foreach ($sel as $href) {
                 $href = (string)$href;
@@ -251,20 +314,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 foreach ($scan['cards'] as $c) if ($c['href'] === $href) { $item = $c; break; }
                 if (!$item) { $fail++; continue; }
                 $title = $item['title']; $desc = $item['text']; $cover = $item['cover'];
-                $ver = ''; $loader = ''; $dl = '';
-                $dhtml = imp_fetch($href);
-                if ($dhtml) {
-                    $f = imp_field($dhtml);
-                    if ($f['title']) $title = $f['title'];
-                    if ($f['desc']) $desc = $f['desc'];
-                    if ($f['cover']) $cover = $f['cover'];
-                    $ver = $f['version']; $loader = $f['loader']; $dl = $f['download'];
+                $ver = ''; $loader = ''; $dl = ''; $author = $item['author'] ?? ''; $contentHtml = ''; $cats = []; $a = null;
+
+                if ($isBbsmc && preg_match('#/modpack/([^/?#]+)#', $href, $mm)) {
+                    // BBSMC：走公开 API 获取完整字段
+                    $a = imp_bbsmc_api($mm[1]);
+                    if ($a['title']) $title = $a['title'];
+                    if ($a['body'] !== '') { $contentHtml = rich_html($a['body']); $desc = $a['desc'] !== '' ? $a['desc'] : $a['body']; }
+                    elseif ($a['desc'] !== '') { $contentHtml = rich_html($a['desc']); $desc = $a['desc']; }
+                    if ($a['cover']) $cover = $a['cover'];
+                    $ver = $a['game_versions'][0] ?? '';
+                    $loader = imp_loader($a['loaders']);
+                    $dl = $a['download'];
+                    $cats = $a['categories'];
+                } else {
+                    $dhtml = imp_fetch($href);
+                    if ($dhtml) {
+                        $f = imp_field($dhtml);
+                        if ($f['title']) $title = $f['title'];
+                        if ($f['desc']) { $desc = $f['desc']; $contentHtml = rich_html($f['desc']); }
+                        if ($f['cover']) $cover = $f['cover'];
+                        $ver = $f['version']; $loader = $f['loader']; $dl = $f['download'];
+                    }
                 }
+                if ($contentHtml === '') $contentHtml = rich_html($desc);
+
                 $slug = imp_slug($title);
                 try {
                     db()->prepare('INSERT INTO modpacks (slug,title,tagline,content,cover,mc_version,mod_loader,author,author_links,download_url,source_type,source_name,category_id,user_id,status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
-                        ->execute([$slug, $title, mb_substr($desc, 0, 240), rich_html($desc), $cover, $ver, $loader, '', '', $dl, 'repost', $domain, $cat ?: null, 0, 0]);
-                    $ok++; $imported[] = '<a href="modpack-form.php?id=' . (int)db()->lastInsertId() . '" class="link">' . e($title) . '</a>';
+                        ->execute([$slug, $title, mb_substr($desc, 0, 240), $contentHtml, $cover, $ver, $loader, $author, '', $dl, 'repost', $domain, $cat ?: null, 0, 0]);
+                    $mpId = (int)db()->lastInsertId();
+
+                    // 下载链接（多版本）
+                    if (!empty($a['downloads_list'])) {
+                        db()->prepare('DELETE FROM modpack_downloads WHERE modpack_id = ?')->execute([$mpId]);
+                        $insDl = db()->prepare('INSERT INTO modpack_downloads (modpack_id, label, url, sort) VALUES (?,?,?,?)');
+                        $srt = 0;
+                        foreach ($a['downloads_list'] as $dli) $insDl->execute([$mpId, mb_substr($dli['label'], 0, 60), $dli['url'], $srt++]);
+                    } elseif ($dl !== '') {
+                        db()->prepare('DELETE FROM modpack_downloads WHERE modpack_id = ?')->execute([$mpId]);
+                        db()->prepare('INSERT INTO modpack_downloads (modpack_id, label, url, sort) VALUES (?,?,?,?)')
+                            ->execute([$mpId, '下载', $dl, 0]);
+                    }
+
+                    // 自动打标签
+                    $tagFind = db()->prepare('SELECT id FROM tags WHERE name = ?');
+                    $tagAdd  = db()->prepare('INSERT INTO tags (name) VALUES (?)');
+                    $relTag  = db()->prepare('INSERT IGNORE INTO modpack_tags (modpack_id, tag_id) VALUES (?,?)');
+                    foreach ($cats as $cn) {
+                        $cn = trim((string)$cn);
+                        if ($cn === '') continue;
+                        $tagFind->execute([$cn]);
+                        $tid = $tagFind->fetchColumn();
+                        if (!$tid) {
+                            try { $tagAdd->execute([$cn]); $tid = (int)db()->lastInsertId(); }
+                            catch (Exception $e) { $tagFind->execute([$cn]); $tid = $tagFind->fetchColumn(); }
+                        }
+                        if ($tid) $relTag->execute([$mpId, $tid]);
+                    }
+
+                    $ok++; $imported[] = '<a href="modpack-form.php?id=' . $mpId . '" class="link">' . e($title) . '</a>';
                 } catch (Exception $e) { $fail++; }
             }
             $msg = ['ok', '导入完成：成功 ' . $ok . ' 条，失败 ' . $fail . ' 条（已导入内容状态为「待审核」）。'];
