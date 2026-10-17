@@ -81,11 +81,54 @@ function imp_is_card($href, $title)
     return true;
 }
 
+/**
+ * BBSMC 专用解析：Nuxt 站 project-card 卡片结构
+ * 标题在 <article class="project-card" aria-label="中文标题 - English">，
+ * 内 <a href="/modpack/slug" class="icon"> 包裹封面 img(cdn.bbsmc.net)，<div class="description"> 为简介。
+ */
+function imp_scan_bbsmc($url, $html)
+{
+    $cards = []; $seen = [];
+    $parts = preg_split('/class="[^"]*project-card[^"]*"/i', $html);
+    for ($i = 1; $i < count($parts); $i++) {
+        $block = $parts[$i];
+        if (!preg_match('/aria-label="([^"]+)"/', $block, $m)) continue;
+        $title = trim($m[1]);
+        $dash = mb_strrpos($title, ' - ');
+        if ($dash !== false) $title = trim(mb_substr($title, 0, $dash));
+        if ($title === '' || mb_strlen($title) < 2) continue;
+        if (!preg_match('#href="(/modpack/[^"]+)"#i', $block, $m2)) continue;
+        $href = imp_abs($url, $m2[1]);
+        $key = md5($href);
+        if (isset($seen[$key])) continue;
+        $seen[$key] = 1;
+        $cover = '';
+        if (preg_match('#<img\b[^>]*src="(https://cdn\.bbsmc\.net/[^"]+)"[^>]*>#i', $block, $m3)) {
+            $cover = $m3[1];
+        } elseif (preg_match('#<img\b[^>]*src="([^"]+)"[^>]*>#i', $block, $m3)) {
+            $cover = imp_abs($url, $m3[1]);
+        }
+        $desc = '';
+        if (preg_match('#class="description"[^>]*>([\s\S]*?)</div>#i', $block, $m4)) {
+            $desc = trim(preg_replace('/\s+/', ' ', trim(strip_tags($m4[1]))));
+        }
+        $title = html_entity_decode($title, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $desc  = html_entity_decode($desc, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $cards[] = ['title' => $title, 'href' => $href, 'cover' => $cover, 'text' => $desc];
+    }
+    return $cards;
+}
+
 function imp_scan($url, $html = null)
 {
     if ($html === null) {
         $html = imp_fetch($url);
         if (!$html) return [];
+    }
+    // BBSMC / Nuxt project-card 结构优先
+    if (stripos($html, 'project-card') !== false && preg_match('/aria-label=/', $html)) {
+        $bs = imp_scan_bbsmc($url, $html);
+        if ($bs) return array_slice($bs, 0, 60);
     }
     $x = imp_dom($html);
     $cards = [];
